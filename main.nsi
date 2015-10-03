@@ -50,11 +50,11 @@ Var /Global Executable
 !insertmacro MUI_LANGUAGE "English"
 
 ; Options
-Name "${APP_NAME_LONG}"
+Name "${APP_NAME}"
 BrandingText "${COPYRIGHT}"
 
-Caption "${APP_NAME_LONG}"
-UninstallCaption "${APP_NAME_LONG}"
+Caption "${APP_NAME}"
+UninstallCaption "${APP_NAME}"
 
 Icon "${NSISDIR}\Contrib\Graphics\Icons\orange-install-nsis.ico"
 UninstallIcon "${NSISDIR}\Contrib\Graphics\Icons\orange-uninstall-nsis.ico"
@@ -75,13 +75,13 @@ XPStyle on
 Function .onInit
 	${If} ${RunningX64}
 		${If} $INSTDIR == ""
-			StrCpy $INSTDIR "$PROGRAMFILES64\${APP_NAME_LONG}"
+			StrCpy $INSTDIR "$PROGRAMFILES64\${APP_NAME}"
 		${EndIf}
 
 		StrCpy $Executable "${APP_NAME_SHORT}64.exe"
 	${Else}
 		${If} $INSTDIR == ""
-			StrCpy $INSTDIR "$PROGRAMFILES32\${APP_NAME_LONG}"
+			StrCpy $INSTDIR "$PROGRAMFILES32\${APP_NAME}"
 		${EndIf}
 
 		StrCpy $Executable "${APP_NAME_SHORT}32.exe"
@@ -89,19 +89,19 @@ Function .onInit
 FunctionEnd
 
 Function un.onInit
-	MessageBox MB_YESNO|MB_ICONEXCLAMATION 'Are you sure you want to uninstall ${APP_NAME_LONG}' IDYES +2
+	MessageBox MB_YESNO|MB_ICONEXCLAMATION 'Are you sure you want to uninstall ${APP_NAME}' IDYES +2
 	Abort
 FunctionEnd
 
 Function un.onUninstSuccess
-    MessageBox MB_OK '${APP_NAME_LONG} completely removed.'
+    MessageBox MB_OK '${APP_NAME} completely removed.'
 FunctionEnd
 
 Function RunApplication
 	Exec '"$INSTDIR\$Executable"'
 FunctionEnd
 
-Section "!${APP_NAME_LONG}"
+Section "!${APP_NAME}"
 	SectionIn RO
 
 	nsExec::Exec 'taskkill.exe /f /im ${APP_NAME_SHORT}32.exe'
@@ -123,7 +123,7 @@ Section "!${APP_NAME_LONG}"
 
 	WriteUninstaller $INSTDIR\uninstall.exe
 
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "DisplayName" "${APP_NAME_LONG}"
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "DisplayName" "${APP_NAME}"
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "DisplayIcon" '"$INSTDIR\$Executable"'
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "UninstallString" '"$INSTDIR\uninstall.exe"'
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "DisplayVersion" "${APP_VERSION}"
@@ -137,7 +137,7 @@ Section "!${APP_NAME_LONG}"
 
 	CreateDirectory "$SMPROGRAMS\$StartMenuFolder"
 
-	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\${APP_NAME_LONG}.lnk" "$INSTDIR\$Executable"
+	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\${APP_NAME}.lnk" "$INSTDIR\$Executable"
 	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\License.lnk" "$INSTDIR\License.txt"
 	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\History.lnk" "$INSTDIR\History.txt"
 	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Readme.lnk" "$INSTDIR\Readme.txt"
@@ -147,7 +147,7 @@ Section "!${APP_NAME_LONG}"
 SectionEnd
 
 Section "Create desktop shortcut"
-	CreateShortCut "$DESKTOP\${APP_NAME_LONG}.lnk" "$INSTDIR\$Executable"
+	CreateShortCut "$DESKTOP\${APP_NAME}.lnk" "$INSTDIR\$Executable"
 SectionEnd
 
 Section /o "Store settings in application directory"
@@ -178,14 +178,14 @@ Section "Uninstall"
 	!insertmacro MUI_STARTMENU_GETFOLDER "Application" $StartMenuFolder
 
 	RMDir /r "$SMPROGRAMS\$StartMenuFolder"
-	Delete "$DESKTOP\${APP_NAME_LONG}.lnk"
+	Delete "$DESKTOP\${APP_NAME}.lnk"
 	
 	; Clean registry
-	DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "${APP_NAME_LONG}"
+	DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "${APP_NAME}"
 	DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}"
 
 	; Settings
-	RMDir /r "$APPDATA\${APP_AUTHOR}\${APP_NAME_LONG}"
+	RMDir /r "$APPDATA\${APP_AUTHOR}\${APP_NAME}"
 	RMDir "$APPDATA\${APP_AUTHOR}"
 
 	RMDir "$INSTDIR"
