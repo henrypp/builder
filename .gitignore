@@ -1,0 +1,8 @@
+$RECYCLE.BIN/
+
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+temp\
+*.exe
