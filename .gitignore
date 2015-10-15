@@ -1,8 +1,8 @@
 $RECYCLE.BIN/
+temp/
 
 Thumbs.db
 ehthumbs.db
 Desktop.ini
 
-temp\
 *.exe

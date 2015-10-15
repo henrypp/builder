@@ -6,7 +6,7 @@ SetCompress force
 !include "LogicLib.nsh"
 !include "MUI2.nsh"
 !include "x64.nsh"
-!include "project\<project_name>.nsh"
+!include "project\errorlookup.nsh"
 
 ; Variables
 Var StartMenuFolder
@@ -17,7 +17,7 @@ Var /Global Executable
 !define APP_WEBSITE "http://www.henrypp.org"
 !define APP_FILES_DIR "..\${APP_NAME_SHORT}\bin"
 
-!define COPYRIGHT "(c) ${APP_AUTHOR}"
+!define COPYRIGHT "(c) ${APP_AUTHOR}. All rights reserved."
 !define LICENSE_FILE "${APP_FILES_DIR}\License.txt"
 
 !define MUI_ABORTWARNING
@@ -115,7 +115,7 @@ Section "!${APP_NAME}"
 		File "${APP_FILES_DIR}\${APP_NAME_SHORT}32.exe"
 	${EndIf}
 
-	File /nonfatal /r "${APP_FILES_DIR}\Language"
+	File /nonfatal /r "${APP_FILES_DIR}\i18n"
 
 	File "${APP_FILES_DIR}\History.txt"
 	File "${APP_FILES_DIR}\License.txt"
@@ -164,7 +164,7 @@ Section "Uninstall"
 	nsExec::Exec 'taskkill.exe /f /im ${APP_NAME_SHORT}64.exe'
 
 	; Clean install directory
-	RMDir /r "$INSTDIR\Language"
+	RMDir /r "$INSTDIR\i18n"
 
 	Delete "$INSTDIR\${APP_NAME_SHORT}32.exe"
 	Delete "$INSTDIR\${APP_NAME_SHORT}64.exe"
@@ -198,6 +198,6 @@ VIAddVersionKey "Comments" "${APP_WEBSITE}"
 VIAddVersionKey "FileDescription" "${APP_NAME}"
 VIAddVersionKey "FileVersion" "${APP_VERSION}"
 VIAddVersionKey "LegalCopyright" "${COPYRIGHT}"
-VIProductVersion "0.0.0.0"
+VIProductVersion "${APP_VERSION}"
 
 !packhdr "$%TEMP%\exehead.tmp" '"upx.exe" "$%TEMP%\exehead.tmp"'
