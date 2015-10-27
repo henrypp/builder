@@ -6,7 +6,7 @@ SetCompress force
 !include "LogicLib.nsh"
 !include "MUI2.nsh"
 !include "x64.nsh"
-!include "project\errorlookup.nsh"
+!include "project\memreduct.nsh"
 
 ; Variables
 Var StartMenuFolder
@@ -151,11 +151,14 @@ Section "Create desktop shortcut"
 SectionEnd
 
 Section /o "Store settings in application directory"
-	SetOutPath $INSTDIR
+	IfFileExists "$INSTDIR\${APP_NAME_SHORT}.ini" file_found file_not_found
 
-	SetOverwrite off
-	File "${APP_FILES_DIR}\${APP_NAME_SHORT}.ini"
-	SetOverwrite on
+	file_not_found:
+
+	FileOpen $0 "$INSTDIR\${APP_NAME_SHORT}.ini" w
+	FileClose $0
+
+	file_found:
 SectionEnd
 
 Section "Uninstall"
@@ -198,6 +201,6 @@ VIAddVersionKey "Comments" "${APP_WEBSITE}"
 VIAddVersionKey "FileDescription" "${APP_NAME}"
 VIAddVersionKey "FileVersion" "${APP_VERSION}"
 VIAddVersionKey "LegalCopyright" "${COPYRIGHT}"
-VIProductVersion "${APP_VERSION}"
+VIProductVersion "${APP_VERSION}.0"
 
 !packhdr "$%TEMP%\exehead.tmp" '"upx.exe" "$%TEMP%\exehead.tmp"'
