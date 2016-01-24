@@ -10,7 +10,6 @@ SetCompress force
 
 ; Variables
 Var StartMenuFolder
-Var /Global Executable
 
 ; Defines
 !define APP_AUTHOR "Henry++"
@@ -77,14 +76,10 @@ Function .onInit
 		${If} $INSTDIR == ""
 			StrCpy $INSTDIR "$PROGRAMFILES64\${APP_NAME}"
 		${EndIf}
-
-		StrCpy $Executable "${APP_NAME_SHORT}64.exe"
 	${Else}
 		${If} $INSTDIR == ""
 			StrCpy $INSTDIR "$PROGRAMFILES32\${APP_NAME}"
 		${EndIf}
-
-		StrCpy $Executable "${APP_NAME_SHORT}32.exe"
 	${EndIf}
 FunctionEnd
 
@@ -98,21 +93,20 @@ Function un.onUninstSuccess
 FunctionEnd
 
 Function RunApplication
-	Exec '"$INSTDIR\$Executable"'
+	Exec '"$INSTDIR\${APP_NAME_SHORT}.exe"'
 FunctionEnd
 
 Section "!${APP_NAME}"
 	SectionIn RO
 
-	nsExec::Exec 'taskkill.exe /f /im ${APP_NAME_SHORT}32.exe'
-	nsExec::Exec 'taskkill.exe /f /im ${APP_NAME_SHORT}64.exe'
+	nsExec::Exec 'taskkill.exe /f /im ${APP_NAME_SHORT}.exe'
 
 	SetOutPath $INSTDIR
 
 	${If} ${RunningX64}
-		File "${APP_FILES_DIR}\${APP_NAME_SHORT}64.exe"
+		File "${APP_FILES_DIR}\64\${APP_NAME_SHORT}.exe"
 	${Else}
-		File "${APP_FILES_DIR}\${APP_NAME_SHORT}32.exe"
+		File "${APP_FILES_DIR}\32\${APP_NAME_SHORT}.exe"
 	${EndIf}
 
 	File /nonfatal /r "${APP_FILES_DIR}\i18n"
@@ -124,7 +118,7 @@ Section "!${APP_NAME}"
 	WriteUninstaller $INSTDIR\uninstall.exe
 
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "DisplayName" "${APP_NAME}"
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "DisplayIcon" '"$INSTDIR\$Executable"'
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "DisplayIcon" '"$INSTDIR\${APP_NAME_SHORT}.exe"'
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "UninstallString" '"$INSTDIR\uninstall.exe"'
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "DisplayVersion" "${APP_VERSION}"
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "InstallLocation" '"$INSTDIR"'
@@ -137,7 +131,7 @@ Section "!${APP_NAME}"
 
 	CreateDirectory "$SMPROGRAMS\$StartMenuFolder"
 
-	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\${APP_NAME}.lnk" "$INSTDIR\$Executable"
+	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\${APP_NAME}.lnk" "$INSTDIR\${APP_NAME_SHORT}.exe"
 	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\License.lnk" "$INSTDIR\License.txt"
 	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\History.lnk" "$INSTDIR\History.txt"
 	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Readme.lnk" "$INSTDIR\Readme.txt"
@@ -147,7 +141,7 @@ Section "!${APP_NAME}"
 SectionEnd
 
 Section "Create desktop shortcut"
-	CreateShortCut "$DESKTOP\${APP_NAME}.lnk" "$INSTDIR\$Executable"
+	CreateShortCut "$DESKTOP\${APP_NAME}.lnk" "$INSTDIR\${APP_NAME_SHORT}.exe"
 SectionEnd
 
 Section /o "Store settings in application directory"
@@ -163,14 +157,13 @@ SectionEnd
 
 Section "Uninstall"
 	; Kill running applications
-	nsExec::Exec 'taskkill.exe /f /im ${APP_NAME_SHORT}32.exe'
-	nsExec::Exec 'taskkill.exe /f /im ${APP_NAME_SHORT}64.exe'
+	nsExec::Exec 'taskkill.exe /f /im ${APP_NAME_SHORT}.exe'
+	nsExec::Exec 'schtasks /delete /f /tn "${APP_NAME_SHORT}SkipUac"'
 
 	; Clean install directory
 	RMDir /r "$INSTDIR\i18n"
 
-	Delete "$INSTDIR\${APP_NAME_SHORT}32.exe"
-	Delete "$INSTDIR\${APP_NAME_SHORT}64.exe"
+	Delete "$INSTDIR\${APP_NAME_SHORT}.exe"
 	Delete "$INSTDIR\${APP_NAME_SHORT}.ini"
 	Delete "$INSTDIR\Readme.txt"
 	Delete "$INSTDIR\History.txt"
