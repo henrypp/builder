@@ -11,6 +11,7 @@ set "NSIS_BIN="%~dp0\nsis\makensis.exe""
 
 rem Cleanup
 
+del /s /f /q "%OUT_DIRECTORY%\*"
 del /s /f /q "%TMP_DIRECTORY%\*"
 
 rem Create temporary folder with binaries and documentation...
@@ -43,7 +44,7 @@ rmdir /s /q "%TMP_DIRECTORY%\64\i18n"
 mkdir "%TMP_DIRECTORY%\i18n"
 copy /y "%BIN_DIRECTORY%\i18n" "%TMP_DIRECTORY%\i18n"
 
-%NSIS_BIN% /DAPP_NAME="%APP_NAME%" /DAPP_FILES_DIR="%TMP_DIRECTORY%" /DAPP_NAME_SHORT="%APP_NAME_SHORT%" /DAPP_VERSION="%APP_VERSION%" /X"OutFile %OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%-setup.exe" installer.nsi
+%NSIS_BIN% /DAPP_FILES_DIR="%TMP_DIRECTORY%" /DAPP_NAME="%APP_NAME%" /DAPP_NAME_SHORT="%APP_NAME_SHORT%" /DAPP_VERSION="%APP_VERSION%" /X"OutFile %OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%-setup.exe" installer.nsi
 
 rem Cleanup
 
