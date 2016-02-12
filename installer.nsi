@@ -6,7 +6,7 @@ SetCompress force
 !include "LogicLib.nsh"
 !include "MUI2.nsh"
 !include "x64.nsh"
-!include "project\memreduct.nsh"
+;!include "project\memreduct.nsh"
 
 ; Variables
 Var StartMenuFolder
@@ -14,7 +14,6 @@ Var StartMenuFolder
 ; Defines
 !define APP_AUTHOR "Henry++"
 !define APP_WEBSITE "http://www.henrypp.org"
-!define APP_FILES_DIR "..\${APP_NAME_SHORT}\bin"
 
 !define COPYRIGHT "(c) ${APP_AUTHOR}. All rights reserved."
 !define LICENSE_FILE "${APP_FILES_DIR}\License.txt"
@@ -60,7 +59,7 @@ UninstallIcon "${NSISDIR}\Contrib\Graphics\Icons\orange-uninstall-nsis.ico"
 
 InstallDirRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "InstallLocation"
 
-OutFile "${APP_NAME_SHORT}_${APP_VERSION}_setup.exe"
+;OutFile "bin\${APP_NAME_SHORT}_${APP_VERSION}_setup.exe"
 RequestExecutionLevel highest
 
 AllowSkipFiles off

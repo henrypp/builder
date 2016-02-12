@@ -1,8 +1,12 @@
 $RECYCLE.BIN/
-temp/
+nsis/
+tmp/
 
 Thumbs.db
 ehthumbs.db
 Desktop.ini
 
+*.7z
 *.exe
+*.rar
+*.zip
