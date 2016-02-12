@@ -50,7 +50,7 @@ copy /y "%BIN_DIRECTORY%\License.txt" "%TMP_DIRECTORY%\License.txt"
 
 rem Pack portable version
 
-7z.exe a -mx9 "%OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%-bin.7z" "%TMP_DIRECTORY%\*"
+7z.exe a -t7z -mx=9 -aoa "%OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%-bin.7z" "%TMP_DIRECTORY%\*"
 
 rem Pack installer
 
