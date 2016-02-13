@@ -2,7 +2,7 @@
 
 set "APP_NAME=Mem Reduct"
 set "APP_NAME_SHORT=memreduct"
-set "APP_VERSION=3.1.1452"
+set "APP_VERSION=3.1.1453"
 
 set "BIN_DIRECTORY=%~dp0..\%APP_NAME_SHORT%\bin"
 set "OUT_DIRECTORY=%~dp0bin"
@@ -50,7 +50,7 @@ copy /y "%BIN_DIRECTORY%\License.txt" "%TMP_DIRECTORY%\License.txt"
 
 rem Pack portable version
 
-7z.exe a -t7z -mx=9 -aoa "%OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%-bin.7z" "%TMP_DIRECTORY%\*"
+7z.exe a -mm=Deflate -mfb=258 -mpass=15 "%OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%-bin.zip" "%TMP_DIRECTORY%\*"
 
 rem Pack installer
 
