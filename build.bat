@@ -1,8 +1,8 @@
 @echo off
 
-set "APP_NAME=Mem Reduct"
-set "APP_NAME_SHORT=memreduct"
-set "APP_VERSION=3.1.1453"
+set "APP_NAME=Ip Lookup"
+set "APP_NAME_SHORT=iplookup"
+set "APP_VERSION=1.4"
 
 set "BIN_DIRECTORY=%~dp0..\%APP_NAME_SHORT%\bin"
 set "OUT_DIRECTORY=%~dp0bin"
@@ -31,6 +31,14 @@ if exist "%BIN_DIRECTORY%\i18n" (
 	
 	copy /y "%BIN_DIRECTORY%\i18n" "%TMP_DIRECTORY%\32\i18n"
 	copy /y "%BIN_DIRECTORY%\i18n" "%TMP_DIRECTORY%\64\i18n"
+)
+
+if exist "%BIN_DIRECTORY%\32\plugins" (
+	mkdir "%TMP_DIRECTORY%\32\plugins"
+	mkdir "%TMP_DIRECTORY%\64\plugins"
+	
+	copy /y "%BIN_DIRECTORY%\32\plugins" "%TMP_DIRECTORY%\32\plugins"
+	copy /y "%BIN_DIRECTORY%\64\plugins" "%TMP_DIRECTORY%\64\plugins"
 )
 
 copy /y "%BIN_DIRECTORY%\32\%APP_NAME_SHORT%.exe" "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.exe"
