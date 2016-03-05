@@ -1,8 +1,8 @@
 @echo off
 
-set "APP_NAME=Ip Lookup"
-set "APP_NAME_SHORT=iplookup"
-set "APP_VERSION=1.4"
+set "APP_NAME=TimeVertor"
+set "APP_NAME_SHORT=timevertor"
+set "APP_VERSION=1.1"
 
 set "BIN_DIRECTORY=%~dp0..\%APP_NAME_SHORT%\bin"
 set "OUT_DIRECTORY=%~dp0bin"
@@ -42,7 +42,9 @@ if exist "%BIN_DIRECTORY%\32\plugins" (
 )
 
 copy /y "%BIN_DIRECTORY%\32\%APP_NAME_SHORT%.exe" "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.exe"
+copy /y "%BIN_DIRECTORY%\32\%APP_NAME_SHORT%.scr" "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.scr"
 copy /y "%BIN_DIRECTORY%\64\%APP_NAME_SHORT%.exe" "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.exe"
+copy /y "%BIN_DIRECTORY%\64\%APP_NAME_SHORT%.scr" "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.scr"
 
 if exist "%BIN_DIRECTORY%\%APP_NAME_SHORT%.ini" (
 	copy /y "%BIN_DIRECTORY%\%APP_NAME_SHORT%.ini" "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.ini"
