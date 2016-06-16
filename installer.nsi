@@ -2,6 +2,22 @@
 SetCompressor /SOLID lzma
 SetCompress force
 
+AllowSkipFiles off
+AutoCloseWindow false
+CRCCheck on
+ShowInstDetails show
+ShowUninstDetails nevershow
+SilentUnInstall silent
+XPStyle on
+
+; The commands inside this ifdef require NSIS 3.0a2 or greater so the ifdef can
+; be removed after we require NSIS 3.0a2 or greater.
+!ifdef NSIS_PACKEDVERSION
+	Unicode true
+	ManifestSupportedOS all
+	ManifestDPIAware true
+!endif
+
 ; Includes
 !include "LogicLib.nsh"
 !include "MUI2.nsh"
@@ -60,14 +76,6 @@ InstallDirRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP
 
 ;OutFile "bin\${APP_NAME_SHORT}_${APP_VERSION}_setup.exe"
 RequestExecutionLevel highest
-
-AllowSkipFiles off
-AutoCloseWindow false
-CRCCheck force
-ShowInstDetails show
-ShowUninstDetails nevershow
-SilentUnInstall silent
-XPStyle on
 
 Function .onInit
 	${If} ${RunningX64}
