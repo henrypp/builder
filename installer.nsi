@@ -8,6 +8,7 @@ CRCCheck on
 ShowInstDetails show
 ShowUninstDetails nevershow
 SilentUnInstall silent
+Unicode true
 XPStyle on
 
 ; The commands inside this ifdef require NSIS 3.0a2 or greater so the ifdef can
