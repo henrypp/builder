@@ -92,6 +92,8 @@ if exist "%BIN_DIRECTORY%\i18n" (
 	copy /y "%BIN_DIRECTORY%\i18n" "%TMP_DIRECTORY%\i18n"
 )
 
+copy /y "%BIN_DIRECTORY%\..\src\res\100.ico" "logo.ico"
+
 makensis.exe /DAPP_FILES_DIR=%TMP_DIRECTORY% /DAPP_NAME=%APP_NAME% /DAPP_NAME_SHORT=%APP_NAME_SHORT% /DAPP_VERSION=%APP_VERSION% /X"OutFile %OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%-setup.exe" installer.nsi
 
 rem Cleanup
@@ -101,3 +103,5 @@ rmdir /s /q "%TMP_DIRECTORY%\64"
 rmdir /s /q "%TMP_DIRECTORY%\i18n"
 
 del /s /f /q "%TMP_DIRECTORY%\*"
+
+del /s /f /q "logo.ico"

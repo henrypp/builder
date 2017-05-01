@@ -60,8 +60,8 @@ BrandingText "${COPYRIGHT}"
 Caption "${APP_NAME} v${APP_VERSION}"
 UninstallCaption "${APP_NAME}"
 
-Icon "${NSISDIR}\Contrib\Graphics\Icons\nsis3-install.ico"
-UninstallIcon "${NSISDIR}\Contrib\Graphics\Icons\nsis3-uninstall.ico"
+Icon "logo.ico"
+UninstallIcon "${NSISDIR}\Contrib\Graphics\Icons\classic-uninstall.ico"
 
 InstallDir "$PROGRAMFILES64\${APP_NAME}"
 InstallDirRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "InstallLocation"
