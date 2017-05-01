@@ -1,31 +1,12 @@
-; Compiler options
+; Archive options
 SetCompressor /SOLID lzma
 SetCompress force
-
-AllowSkipFiles off
-AutoCloseWindow false
-CRCCheck on
-ShowInstDetails show
-ShowUninstDetails nevershow
-SilentUnInstall silent
 Unicode true
-XPStyle on
-
-; The commands inside this ifdef require NSIS 3.0a2 or greater so the ifdef can
-; be removed after we require NSIS 3.0a2 or greater.
-!ifdef NSIS_PACKEDVERSION
-	Unicode true
-	ManifestSupportedOS all
-	ManifestDPIAware true
-!endif
 
 ; Includes
 !include "LogicLib.nsh"
 !include "MUI2.nsh"
 !include "x64.nsh"
-
-; Variables
-Var StartMenuFolder
 
 ; Defines
 !define APP_AUTHOR "Henry++"
@@ -34,28 +15,24 @@ Var StartMenuFolder
 !define COPYRIGHT "(c) ${APP_AUTHOR}. All rights reserved."
 !define LICENSE_FILE "${APP_FILES_DIR}\License.txt"
 
-!define MUI_ABORTWARNING
+;!define MUI_ABORTWARNING
+!define MUI_FINISHPAGE_NOAUTOCLOSE
 !define MUI_COMPONENTSPAGE_NODESC
 
-!define MUI_WELCOMEFINISHPAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Wizard\orange-nsis.bmp"
-
-!define MUI_STARTMENUPAGE_REGISTRY_ROOT "HKLM" 
-!define MUI_STARTMENUPAGE_REGISTRY_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}"
-!define MUI_STARTMENUPAGE_REGISTRY_VALUENAME "StartMenuDir"
+!define MUI_WELCOMEFINISHPAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Wizard\nsis3-branding.bmp"
+!define MUI_HEADERIMAGE
+!define MUI_HEADERIMAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Header\nsis3-branding.bmp"
 
 !define MUI_FINISHPAGE_RUN
 !define MUI_FINISHPAGE_RUN_FUNCTION RunApplication
+
 !define MUI_FINISHPAGE_LINK_LOCATION "${APP_WEBSITE}"
 !define MUI_FINISHPAGE_LINK "${APP_WEBSITE}"
-!define MUI_FINISHPAGE_TEXT_LARGE
 
 ; Pages
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "${LICENSE_FILE}"
 !insertmacro MUI_PAGE_COMPONENTS
-
-!insertmacro MUI_PAGE_STARTMENU Application $StartMenuFolder
-
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
@@ -64,21 +41,44 @@ Var StartMenuFolder
 !insertmacro MUI_LANGUAGE "English"
 
 ; Options
+AllowSkipFiles off
+AutoCloseWindow false
+CRCCheck on
+ShowInstDetails show
+ShowUninstDetails nevershow
+SilentUnInstall silent
+XPStyle on
+ManifestSupportedOS all
+ManifestDPIAware true
+
 Name "${APP_NAME}"
 BrandingText "${COPYRIGHT}"
 
-Caption "${APP_NAME}"
+Caption "${APP_NAME} v${APP_VERSION}"
 UninstallCaption "${APP_NAME}"
 
-Icon "${NSISDIR}\Contrib\Graphics\Icons\orange-install-nsis.ico"
-UninstallIcon "${NSISDIR}\Contrib\Graphics\Icons\orange-uninstall-nsis.ico"
+Icon "${NSISDIR}\Contrib\Graphics\Icons\nsis3-install.ico"
+UninstallIcon "${NSISDIR}\Contrib\Graphics\Icons\nsis3-uninstall.ico"
 
 InstallDirRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "InstallLocation"
 
 ;OutFile "bin\${APP_NAME_SHORT}_${APP_VERSION}_setup.exe"
 RequestExecutionLevel highest
 
+!macro CheckMutex
+	retry:
+	System::Call 'kernel32::OpenMutex(i 0x100000, b 0, t "${APP_NAME_SHORT}") i .R0'
+	IntCmp $R0 0 ignore
+		System::Call 'kernel32::CloseHandle(i $R0)'
+		MessageBox MB_ABORTRETRYIGNORE|MB_ICONEXCLAMATION|MB_TOPMOST '"${APP_NAME}" is running. Please close it before continue.' IDRETRY retry IDIGNORE ignore
+		Abort
+	ignore:
+!macroend
+!define CheckMutex "${CallArtificialFunction} CheckMutex"
+
 Function .onInit
+	${CheckMutex}
+
 	${If} ${RunningX64}
 		${If} $INSTDIR == ""
 			StrCpy $INSTDIR "$PROGRAMFILES64\${APP_NAME}"
@@ -91,12 +91,14 @@ Function .onInit
 FunctionEnd
 
 Function un.onInit
-	MessageBox MB_YESNO|MB_ICONEXCLAMATION 'Are you sure you want to uninstall ${APP_NAME}' IDYES +2
+	${CheckMutex}
+
+	MessageBox MB_YESNO|MB_ICONEXCLAMATION|MB_TOPMOST|MB_DEFBUTTON2 'Are you sure you want to uninstall "${APP_NAME}"?' IDYES +2
 	Abort
 FunctionEnd
 
 Function un.onUninstSuccess
-    MessageBox MB_OK '${APP_NAME} completely removed.'
+    MessageBox MB_OK|MB_ICONINFORMATION|MB_TOPMOST '"${APP_NAME}" was completely removed.'
 FunctionEnd
 
 Function RunApplication
@@ -106,8 +108,6 @@ FunctionEnd
 Section "!${APP_NAME}"
 	SectionIn RO
 
-	nsExec::Exec 'taskkill.exe /f /im ${APP_NAME_SHORT}.exe'
-
 	SetOutPath $INSTDIR
 
 	${If} ${RunningX64}
@@ -116,46 +116,45 @@ Section "!${APP_NAME}"
 		File "${APP_FILES_DIR}\32\${APP_NAME_SHORT}.exe"
 	${EndIf}
 
-	File /nonfatal /r "${APP_FILES_DIR}\i18n"
-
 	File "${APP_FILES_DIR}\History.txt"
 	File "${APP_FILES_DIR}\License.txt"
 	File "${APP_FILES_DIR}\Readme.txt"
 
+	File /nonfatal /r "${APP_FILES_DIR}\i18n"
+
 	WriteUninstaller $INSTDIR\uninstall.exe
 
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "DisplayName" "${APP_NAME}"
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "DisplayIcon" '"$INSTDIR\${APP_NAME_SHORT}.exe"'
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "UninstallString" '"$INSTDIR\uninstall.exe"'
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "DisplayVersion" "${APP_VERSION}"
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "InstallLocation" '"$INSTDIR"'
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "Publisher" "${APP_AUTHOR}"
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "HelpLink" "${APP_WEBSITE}"
-	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "NoModify" 1
-	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "NoRepair" 1
-
-	!insertmacro MUI_STARTMENU_WRITE_BEGIN Application
-
-	CreateDirectory "$SMPROGRAMS\$StartMenuFolder"
-
-	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\${APP_NAME}.lnk" "$INSTDIR\${APP_NAME_SHORT}.exe"
-	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\License.lnk" "$INSTDIR\License.txt"
-	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\History.lnk" "$INSTDIR\History.txt"
-	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Readme.lnk" "$INSTDIR\Readme.txt"
-	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Uninstall.lnk" "$INSTDIR\uninstall.exe"
-
-	!insertmacro MUI_STARTMENU_WRITE_END
+	Call CreateUninstallEntry
 SectionEnd
 
 Section "Create desktop shortcut"
 	CreateShortCut "$DESKTOP\${APP_NAME}.lnk" "$INSTDIR\${APP_NAME_SHORT}.exe"
 SectionEnd
 
-Section /o "Store settings in application directory"
+Section "Create start menu shortcuts"
+	CreateDirectory "$SMPROGRAMS\${APP_NAME}"
+
+	CreateShortCut "$SMPROGRAMS\${APP_NAME}\${APP_NAME}.lnk" "$INSTDIR\${APP_NAME_SHORT}.exe"
+	CreateShortCut "$SMPROGRAMS\${APP_NAME}\License.lnk" "$INSTDIR\License.txt"
+	CreateShortCut "$SMPROGRAMS\${APP_NAME}\History.lnk" "$INSTDIR\History.txt"
+	CreateShortCut "$SMPROGRAMS\${APP_NAME}\Readme.lnk" "$INSTDIR\Readme.txt"
+	CreateShortCut "$SMPROGRAMS\${APP_NAME}\Uninstall.lnk" "$INSTDIR\uninstall.exe"
+SectionEnd
+
+Section /o "Store settings in application directory (portable mode)" SecPortable
 	IfFileExists "$INSTDIR\${APP_NAME_SHORT}.ini" file_found file_not_found
 
+	; Check for existent configuration
 	file_not_found:
+	IfFileExists "$APPDATA\${APP_AUTHOR}\${APP_NAME}\${APP_NAME_SHORT}.ini" cfg_found cfg_not_found
 
+	; Copy existing configuration
+	cfg_found:
+	CopyFiles /SILENT /FILESONLY $APPDATA\${APP_AUTHOR}\${APP_NAME}\* $INSTDIR
+	Goto file_found
+
+	; Create empty .ini
+	cfg_not_found:
 	FileOpen $0 "$INSTDIR\${APP_NAME_SHORT}.ini" w
 	FileClose $0
 
@@ -163,13 +162,22 @@ Section /o "Store settings in application directory"
 SectionEnd
 
 Section "Uninstall"
-	; Kill running applications
-	nsExec::Exec 'taskkill.exe /f /im ${APP_NAME_SHORT}.exe'
+	; Remove "skipuac" entry
 	nsExec::Exec 'schtasks /delete /f /tn "${APP_NAME_SHORT}SkipUac"'
 
-	; Clean install directory
+	; Remove configuration from %appdata% only for non-portable mode
+	IfFileExists "$INSTDIR\${APP_NAME_SHORT}.ini" file_found file_not_found
+
+	file_not_found:
+	RMDir /r "$APPDATA\${APP_AUTHOR}\${APP_NAME}"
+	RMDir "$APPDATA\${APP_AUTHOR}"
+
+	file_found:
+
+	; Remove localizations
 	RMDir /r "$INSTDIR\i18n"
 
+	; Remove install directory
 	Delete "$INSTDIR\${APP_NAME_SHORT}.exe"
 	Delete "$INSTDIR\${APP_NAME_SHORT}.ini"
 	Delete "$INSTDIR\Readme.txt"
@@ -177,22 +185,31 @@ Section "Uninstall"
 	Delete "$INSTDIR\License.txt"
 	Delete "$INSTDIR\Uninstall.exe"
 
-	; Delete shortcut's
-	!insertmacro MUI_STARTMENU_GETFOLDER "Application" $StartMenuFolder
-
-	RMDir /r "$SMPROGRAMS\$StartMenuFolder"
+	; Remove shortcuts
+	RMDir /r "$SMPROGRAMS\${APP_NAME}"
 	Delete "$DESKTOP\${APP_NAME}.lnk"
-	
+
 	; Clean registry
 	DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "${APP_NAME}"
 	DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}"
 
-	; Settings
-	RMDir /r "$APPDATA\${APP_AUTHOR}\${APP_NAME}"
-	RMDir "$APPDATA\${APP_AUTHOR}"
-
 	RMDir "$INSTDIR"
 SectionEnd
+
+Function CreateUninstallEntry
+	; Create uninstall entry only for non-portable mode
+	${IfNot} ${SectionIsSelected} ${SecPortable}
+		WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "DisplayName" "${APP_NAME}"
+		WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "DisplayIcon" '"$INSTDIR\${APP_NAME_SHORT}.exe"'
+		WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "UninstallString" '"$INSTDIR\uninstall.exe"'
+		WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "DisplayVersion" "${APP_VERSION}"
+		WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "InstallLocation" '"$INSTDIR"'
+		WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "Publisher" "${APP_AUTHOR}"
+		WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "HelpLink" "${APP_WEBSITE}"
+		WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "NoModify" 1
+		WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "NoRepair" 1
+	${EndIf}
+FunctionEnd
 
 ; Version info
 VIAddVersionKey "ProductName" "${APP_NAME}"
