@@ -7,10 +7,12 @@ Unicode true
 !include "LogicLib.nsh"
 !include "MUI2.nsh"
 !include "x64.nsh"
+!include "WinVer.nsh"
 
 ; Defines
 !define APP_AUTHOR "Henry++"
-!define APP_WEBSITE "http://www.henrypp.org"
+!define APP_WEBSITE_HOST "www.henrypp.org"
+!define APP_WEBSITE "http://${APP_WEBSITE_HOST}"
 
 !define COPYRIGHT "(c) ${APP_AUTHOR}. All rights reserved."
 !define LICENSE_FILE "${APP_FILES_DIR}\License.txt"
@@ -27,7 +29,7 @@ Unicode true
 !define MUI_FINISHPAGE_RUN_FUNCTION RunApplication
 
 !define MUI_FINISHPAGE_LINK_LOCATION "${APP_WEBSITE}"
-!define MUI_FINISHPAGE_LINK "${APP_WEBSITE}"
+!define MUI_FINISHPAGE_LINK "${APP_WEBSITE_HOST}"
 
 ; Pages
 !insertmacro MUI_PAGE_WELCOME
@@ -43,13 +45,14 @@ Unicode true
 ; Options
 AllowSkipFiles off
 AutoCloseWindow false
-CRCCheck on
+LicenseBkColor /windows
+ManifestSupportedOS all
+ManifestDPIAware true
+SetFont 'Arial' 8
 ShowInstDetails show
 ShowUninstDetails nevershow
 SilentUnInstall silent
 XPStyle on
-ManifestSupportedOS all
-ManifestDPIAware true
 
 Name "${APP_NAME}"
 BrandingText "${COPYRIGHT}"
@@ -60,9 +63,10 @@ UninstallCaption "${APP_NAME}"
 Icon "${NSISDIR}\Contrib\Graphics\Icons\nsis3-install.ico"
 UninstallIcon "${NSISDIR}\Contrib\Graphics\Icons\nsis3-uninstall.ico"
 
+InstallDir "$PROGRAMFILES64\${APP_NAME}"
 InstallDirRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "InstallLocation"
 
-;OutFile "bin\${APP_NAME_SHORT}_${APP_VERSION}_setup.exe"
+;OutFile "${APP_NAME_SHORT}_${APP_VERSION}_setup.exe"
 RequestExecutionLevel highest
 
 !macro CheckMutex
@@ -74,20 +78,19 @@ RequestExecutionLevel highest
 		Abort
 	ignore:
 !macroend
+
 !define CheckMutex "${CallArtificialFunction} CheckMutex"
 
 Function .onInit
-	${CheckMutex}
-
-	${If} ${RunningX64}
-		${If} $INSTDIR == ""
-			StrCpy $INSTDIR "$PROGRAMFILES64\${APP_NAME}"
-		${EndIf}
-	${Else}
-		${If} $INSTDIR == ""
-			StrCpy $INSTDIR "$PROGRAMFILES32\${APP_NAME}"
+	; Windows Vista and later
+	${If} ${APP_NAME_SHORT} == 'simplewall'
+		${IfNot} ${AtLeastWinVista}
+			MessageBox MB_OK|MB_ICONEXCLAMATION|MB_TOPMOST '"${APP_NAME}" requires Windows Vista and later.'
+			Abort
 		${EndIf}
 	${EndIf}
+
+	${CheckMutex}
 FunctionEnd
 
 Function un.onInit
@@ -116,13 +119,13 @@ Section "!${APP_NAME}"
 		File "${APP_FILES_DIR}\32\${APP_NAME_SHORT}.exe"
 	${EndIf}
 
+	WriteUninstaller $INSTDIR\uninstall.exe
+
 	File "${APP_FILES_DIR}\History.txt"
 	File "${APP_FILES_DIR}\License.txt"
 	File "${APP_FILES_DIR}\Readme.txt"
 
 	File /nonfatal /r "${APP_FILES_DIR}\i18n"
-
-	WriteUninstaller $INSTDIR\uninstall.exe
 
 	Call CreateUninstallEntry
 SectionEnd
@@ -150,7 +153,7 @@ Section /o "Store settings in application directory (portable mode)" SecPortable
 
 	; Copy existing configuration
 	cfg_found:
-	CopyFiles /SILENT /FILESONLY $APPDATA\${APP_AUTHOR}\${APP_NAME}\* $INSTDIR
+	CopyFiles /SILENT /FILESONLY '$APPDATA\${APP_AUTHOR}\${APP_NAME}\*' $INSTDIR
 	Goto file_found
 
 	; Create empty .ini
@@ -162,6 +165,13 @@ Section /o "Store settings in application directory (portable mode)" SecPortable
 SectionEnd
 
 Section "Uninstall"
+	${If} ${APP_NAME_SHORT} == 'simplewall'
+		ExecWait '"$INSTDIR\${APP_NAME_SHORT}.exe" /uninstall'
+	${EndIf}
+
+	; Destroy process
+	nsExec::Exec 'taskkill /f /im "${APP_NAME_SHORT}.exe"'
+
 	; Remove "skipuac" entry
 	nsExec::Exec 'schtasks /delete /f /tn "${APP_NAME_SHORT}SkipUac"'
 

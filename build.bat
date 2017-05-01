@@ -1,8 +1,14 @@
 @echo off
 
-set "APP_NAME=simplewall"
-set "APP_NAME_SHORT=simplewall"
-set "APP_VERSION=1.5.4"
+if [%1]==[] (
+	echo Usage: build.bat app_name app_name_short app_version
+	pause
+	exit
+)
+
+set "APP_NAME=%1"
+set "APP_NAME_SHORT=%2"
+set "APP_VERSION=%3"
 
 set "BIN_DIRECTORY=%~dp0..\%APP_NAME_SHORT%\bin"
 set "OUT_DIRECTORY=%UserProfile%\Desktop"
@@ -86,7 +92,7 @@ if exist "%BIN_DIRECTORY%\i18n" (
 	copy /y "%BIN_DIRECTORY%\i18n" "%TMP_DIRECTORY%\i18n"
 )
 
-makensis.exe /DAPP_FILES_DIR="%TMP_DIRECTORY%" /DAPP_NAME="%APP_NAME%" /DAPP_NAME_SHORT="%APP_NAME_SHORT%" /DAPP_VERSION="%APP_VERSION%" /X"OutFile %OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%-setup.exe" installer.nsi
+makensis.exe /DAPP_FILES_DIR=%TMP_DIRECTORY% /DAPP_NAME=%APP_NAME% /DAPP_NAME_SHORT=%APP_NAME_SHORT% /DAPP_VERSION=%APP_VERSION% /X"OutFile %OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%-setup.exe" installer.nsi
 
 rem Cleanup
 
@@ -95,5 +101,3 @@ rmdir /s /q "%TMP_DIRECTORY%\64"
 rmdir /s /q "%TMP_DIRECTORY%\i18n"
 
 del /s /f /q "%TMP_DIRECTORY%\*"
-
-pause
