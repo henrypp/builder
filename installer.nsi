@@ -9,6 +9,8 @@ Unicode true
 !include "x64.nsh"
 !include "WinVer.nsh"
 
+Var /GLOBAL ProfilePath
+
 ; Defines
 !define APP_AUTHOR "Henry++"
 !define APP_WEBSITE_HOST "www.henrypp.org"
@@ -34,8 +36,10 @@ Unicode true
 ; Pages
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "${LICENSE_FILE}"
-!insertmacro MUI_PAGE_COMPONENTS
+!define MUI_PAGE_CUSTOMFUNCTION_LEAVE IsPortable
 !insertmacro MUI_PAGE_DIRECTORY
+!insertmacro MUI_PAGE_COMPONENTS
+!define MUI_PAGE_CUSTOMFUNCTION_PRE SetPortableMode
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
 
@@ -69,6 +73,7 @@ InstallDirRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP
 ;OutFile "${APP_NAME_SHORT}_${APP_VERSION}_setup.exe"
 RequestExecutionLevel highest
 
+#################################
 !macro CheckMutex
 	retry:
 	System::Call 'kernel32::OpenMutex(i 0x100000, b 0, t "${APP_NAME_SHORT}") i .R0'
@@ -80,12 +85,13 @@ RequestExecutionLevel highest
 !macroend
 
 !define CheckMutex "${CallArtificialFunction} CheckMutex"
+#################################
 
 Function .onInit
 	; Windows Vista and later
 	${If} ${APP_NAME_SHORT} == 'simplewall'
 		${IfNot} ${AtLeastWinVista}
-			MessageBox MB_OK|MB_ICONEXCLAMATION|MB_TOPMOST '"${APP_NAME}" requires Windows Vista and later.'
+			MessageBox MB_OK|MB_ICONEXCLAMATION|MB_TOPMOST '"${APP_NAME}" requires Windows Vista or later.'
 			Abort
 		${EndIf}
 	${EndIf}
@@ -101,11 +107,7 @@ Function un.onInit
 FunctionEnd
 
 Function un.onUninstSuccess
-    MessageBox MB_OK|MB_ICONINFORMATION|MB_TOPMOST '"${APP_NAME}" was completely removed.'
-FunctionEnd
-
-Function RunApplication
-	Exec '"$INSTDIR\${APP_NAME_SHORT}.exe"'
+	MessageBox MB_OK|MB_ICONINFORMATION|MB_TOPMOST '"${APP_NAME}" was completely removed.'
 FunctionEnd
 
 Section "!${APP_NAME}"
@@ -119,22 +121,33 @@ Section "!${APP_NAME}"
 		File "${APP_FILES_DIR}\32\${APP_NAME_SHORT}.exe"
 	${EndIf}
 
-	WriteUninstaller $INSTDIR\uninstall.exe
-
 	File "${APP_FILES_DIR}\History.txt"
 	File "${APP_FILES_DIR}\License.txt"
 	File "${APP_FILES_DIR}\Readme.txt"
 
+	WriteUninstaller $INSTDIR\uninstall.exe
+
 	File /nonfatal /r "${APP_FILES_DIR}\i18n"
+
+	${If} ${APP_NAME_SHORT} == 'simplewall'
+		SetOutPath $ProfilePath
+
+		File "${APP_FILES_DIR}\32\blocklist.xml"
+		File "${APP_FILES_DIR}\32\rules_system.xml"
+
+		SetOverwrite off
+		File "${APP_FILES_DIR}\32\rules_custom.xml"
+		SetOverwrite on
+	${EndIf}
 
 	Call CreateUninstallEntry
 SectionEnd
 
-Section "Create desktop shortcut"
+Section "Create desktop shortcut" SecShortcut1
 	CreateShortCut "$DESKTOP\${APP_NAME}.lnk" "$INSTDIR\${APP_NAME_SHORT}.exe"
 SectionEnd
 
-Section "Create start menu shortcuts"
+Section "Create start menu shortcuts" SecShortcut2
 	CreateDirectory "$SMPROGRAMS\${APP_NAME}"
 
 	CreateShortCut "$SMPROGRAMS\${APP_NAME}\${APP_NAME}.lnk" "$INSTDIR\${APP_NAME_SHORT}.exe"
@@ -145,23 +158,14 @@ Section "Create start menu shortcuts"
 SectionEnd
 
 Section /o "Store settings in application directory (portable mode)" SecPortable
-	IfFileExists "$INSTDIR\${APP_NAME_SHORT}.ini" file_found file_not_found
-
-	; Check for existent configuration
-	file_not_found:
-	IfFileExists "$APPDATA\${APP_AUTHOR}\${APP_NAME}\${APP_NAME_SHORT}.ini" cfg_found cfg_not_found
-
-	; Copy existing configuration
-	cfg_found:
-	CopyFiles /SILENT /FILESONLY '$APPDATA\${APP_AUTHOR}\${APP_NAME}\*' $INSTDIR
-	Goto file_found
+	IfFileExists "$INSTDIR\${APP_NAME_SHORT}.ini" portable not_portable
 
 	; Create empty .ini
-	cfg_not_found:
+	not_portable:
 	FileOpen $0 "$INSTDIR\${APP_NAME_SHORT}.ini" w
 	FileClose $0
 
-	file_found:
+	portable:
 SectionEnd
 
 Section "Uninstall"
@@ -176,13 +180,13 @@ Section "Uninstall"
 	nsExec::Exec 'schtasks /delete /f /tn "${APP_NAME_SHORT}SkipUac"'
 
 	; Remove configuration from %appdata% only for non-portable mode
-	IfFileExists "$INSTDIR\${APP_NAME_SHORT}.ini" file_found file_not_found
+	IfFileExists "$INSTDIR\${APP_NAME_SHORT}.ini" portable not_portable
 
-	file_not_found:
+	not_portable:
 	RMDir /r "$APPDATA\${APP_AUTHOR}\${APP_NAME}"
 	RMDir "$APPDATA\${APP_AUTHOR}"
 
-	file_found:
+	portable:
 
 	; Remove localizations
 	RMDir /r "$INSTDIR\i18n"
@@ -193,6 +197,14 @@ Section "Uninstall"
 	Delete "$INSTDIR\Readme.txt"
 	Delete "$INSTDIR\History.txt"
 	Delete "$INSTDIR\License.txt"
+
+	${If} ${APP_NAME_SHORT} == 'simplewall'
+		Delete "$INSTDIR\apps.xml"
+		Delete "$INSTDIR\blocklist.xml"
+		Delete "$INSTDIR\rules_system.xml"
+		Delete "$INSTDIR\rules_custom.xml"
+	${EndIf}
+
 	Delete "$INSTDIR\Uninstall.exe"
 
 	; Remove shortcuts
@@ -205,6 +217,42 @@ Section "Uninstall"
 
 	RMDir "$INSTDIR"
 SectionEnd
+
+Function RunApplication
+	Exec '"$INSTDIR\${APP_NAME_SHORT}.exe"'
+FunctionEnd
+
+Function IsPortable
+	IfFileExists "$INSTDIR\${APP_NAME_SHORT}.ini" portable not_portable
+
+	portable:
+
+	SectionSetFlags ${SecPortable} ${SF_SELECTED}
+
+	SectionSetFlags ${SecShortcut1} 0
+	SectionSetFlags ${SecShortcut2} 0
+
+	Goto end
+	
+	not_portable:
+
+	SectionSetFlags ${SecPortable} 0
+
+	SectionSetFlags ${SecShortcut1} ${SF_SELECTED}
+	SectionSetFlags ${SecShortcut2} ${SF_SELECTED}
+
+	end:
+FunctionEnd
+
+Function SetPortableMode
+	${IfNot} ${SectionIsSelected} ${SecPortable}
+		StrCpy $ProfilePath "$APPDATA\${APP_AUTHOR}\${APP_NAME}"
+		MessageBox MB_OK|MB_ICONINFORMATION|MB_TOPMOST 'NOT PORTABLE'
+	${Else}
+		StrCpy $ProfilePath "$INSTDIR"
+		MessageBox MB_OK|MB_ICONINFORMATION|MB_TOPMOST 'PORTABLE'
+	${EndIf}
+FunctionEnd
 
 Function CreateUninstallEntry
 	; Create uninstall entry only for non-portable mode

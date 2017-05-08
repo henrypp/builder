@@ -14,6 +14,10 @@ set "BIN_DIRECTORY=%~dp0..\%APP_NAME_SHORT%\bin"
 set "OUT_DIRECTORY=%UserProfile%\Desktop"
 set "TMP_DIRECTORY=%~dp0tmp"
 
+set "PORTABLE_FILE=%OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%-bin.zip"
+set "SETUP_FILE=%OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%-setup.exe"
+set "MD5_FILE=%OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%.md5"
+
 rem Create temporary folder with binaries and documentation...
 
 del /s /f /q "%TMP_DIRECTORY%\*"
@@ -80,7 +84,7 @@ copy /y "%BIN_DIRECTORY%\64\*.dll" "%TMP_DIRECTORY%\64\*.dll"
 
 rem Create portable version
 
-7z.exe a -mm=LZMA -mx=9 -md=64m -mmf=hc4 -mfb=273 "%OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%-bin.zip" "%TMP_DIRECTORY%\*"
+7z.exe a -mm=LZMA -mx=9 -md=64m -mmf=hc4 -mfb=273 "%PORTABLE_FILE%" "%TMP_DIRECTORY%\*"
 
 rem Create setup version
 
@@ -94,7 +98,18 @@ if exist "%BIN_DIRECTORY%\i18n" (
 
 copy /y "%BIN_DIRECTORY%\..\src\res\100.ico" "logo.ico"
 
-makensis.exe /DAPP_FILES_DIR=%TMP_DIRECTORY% /DAPP_NAME=%APP_NAME% /DAPP_NAME_SHORT=%APP_NAME_SHORT% /DAPP_VERSION=%APP_VERSION% /X"OutFile %OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%-setup.exe" installer.nsi
+makensis.exe /DAPP_FILES_DIR=%TMP_DIRECTORY% /DAPP_NAME=%APP_NAME% /DAPP_NAME_SHORT=%APP_NAME_SHORT% /DAPP_VERSION=%APP_VERSION% /X"OutFile %SETUP_FILE%" installer.nsi
+
+rem Calculate hash
+
+del /s /f /q "%MD5_FILE%"
+
+md5deep64 -b "%PORTABLE_FILE%">>"%MD5_FILE%"
+md5deep64 -b "%SETUP_FILE%">>"%MD5_FILE%"
+echo #32-bit:>>"%MD5_FILE%"
+md5deep64 -b "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.exe">>"%MD5_FILE%"
+echo #64-bit:>>"%MD5_FILE%"
+md5deep64 -b "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.exe">>"%MD5_FILE%"
 
 rem Cleanup
 
@@ -105,3 +120,5 @@ rmdir /s /q "%TMP_DIRECTORY%\i18n"
 del /s /f /q "%TMP_DIRECTORY%\*"
 
 del /s /f /q "logo.ico"
+
+pause
