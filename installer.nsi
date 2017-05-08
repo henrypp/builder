@@ -247,10 +247,8 @@ FunctionEnd
 Function SetPortableMode
 	${IfNot} ${SectionIsSelected} ${SecPortable}
 		StrCpy $ProfilePath "$APPDATA\${APP_AUTHOR}\${APP_NAME}"
-		MessageBox MB_OK|MB_ICONINFORMATION|MB_TOPMOST 'NOT PORTABLE'
 	${Else}
 		StrCpy $ProfilePath "$INSTDIR"
-		MessageBox MB_OK|MB_ICONINFORMATION|MB_TOPMOST 'PORTABLE'
 	${EndIf}
 FunctionEnd
 
