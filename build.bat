@@ -17,6 +17,7 @@ set "TMP_DIRECTORY=%~dp0tmp"
 set "PORTABLE_FILE=%OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%-bin.zip"
 set "SETUP_FILE=%OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%-setup.exe"
 set "MD5_FILE=%OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%.md5"
+set "SHA256_FILE=%OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%.sha256"
 
 rem Create temporary folder with binaries and documentation...
 
@@ -100,7 +101,7 @@ copy /y "%BIN_DIRECTORY%\..\src\res\100.ico" "logo.ico"
 
 makensis.exe /DAPP_FILES_DIR=%TMP_DIRECTORY% /DAPP_NAME=%APP_NAME% /DAPP_NAME_SHORT=%APP_NAME_SHORT% /DAPP_VERSION=%APP_VERSION% /X"OutFile %SETUP_FILE%" installer.nsi
 
-rem Calculate hash
+rem Calculate md5 hash
 
 del /s /f /q "%MD5_FILE%"
 
@@ -110,6 +111,17 @@ echo #32-bit:>>"%MD5_FILE%"
 md5deep64 -b "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.exe">>"%MD5_FILE%"
 echo #64-bit:>>"%MD5_FILE%"
 md5deep64 -b "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.exe">>"%MD5_FILE%"
+
+rem Calculate sha256 hash
+
+del /s /f /q "%SHA256_FILE%"
+
+sha256deep64 -b "%PORTABLE_FILE%">>"%SHA256_FILE%"
+sha256deep64 -b "%SETUP_FILE%">>"%SHA256_FILE%"
+echo #32-bit:>>"%SHA256_FILE%"
+sha256deep64 -b "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.exe">>"%SHA256_FILE%"
+echo #64-bit:>>"%SHA256_FILE%"
+sha256deep64 -b "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.exe">>"%SHA256_FILE%"
 
 rem Cleanup
 

@@ -132,11 +132,11 @@ Section "!${APP_NAME}"
 	${If} ${APP_NAME_SHORT} == 'simplewall'
 		SetOutPath $ProfilePath
 
-		File "${APP_FILES_DIR}\32\blocklist.xml"
-		File "${APP_FILES_DIR}\32\rules_system.xml"
+		File /nonfatal "${APP_FILES_DIR}\32\blocklist.xml"
+		File /nonfatal "${APP_FILES_DIR}\32\rules_system.xml"
 
 		SetOverwrite off
-		File "${APP_FILES_DIR}\32\rules_custom.xml"
+		File /nonfatal "${APP_FILES_DIR}\32\rules_custom.xml"
 		SetOverwrite on
 	${EndIf}
 
