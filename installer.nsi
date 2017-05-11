@@ -274,6 +274,6 @@ VIAddVersionKey "Comments" "${APP_WEBSITE}"
 VIAddVersionKey "FileDescription" "${APP_NAME}"
 VIAddVersionKey "FileVersion" "${APP_VERSION}"
 VIAddVersionKey "LegalCopyright" "${COPYRIGHT}"
-VIProductVersion "${APP_VERSION}.0"
+VIProductVersion "${APP_VERSION}.0.0"
 
 ;!packhdr "$%TEMP%\exehead.tmp" '"upx.exe" "$%TEMP%\exehead.tmp"'

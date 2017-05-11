@@ -22,6 +22,10 @@ rem Create temporary folder with binaries and documentation...
 
 del /s /f /q "%TMP_DIRECTORY%\*"
 
+del /s /f /q "%PORTABLE_FILE%"
+del /s /f /q "%SETUP_FILE%"
+del /s /f /q "%CHECKSUM_FILE%"
+
 mkdir "%TMP_DIRECTORY%\32"
 mkdir "%TMP_DIRECTORY%\64"
 
@@ -101,8 +105,6 @@ copy /y "%BIN_DIRECTORY%\..\src\res\100.ico" "logo.ico"
 makensis.exe /DAPP_FILES_DIR=%TMP_DIRECTORY% /DAPP_NAME=%APP_NAME% /DAPP_NAME_SHORT=%APP_NAME_SHORT% /DAPP_VERSION=%APP_VERSION% /X"OutFile %SETUP_FILE%" installer.nsi
 
 rem Calculate md5 hash
-
-del /s /f /q "%CHECKSUM_FILE%"
 
 echo #MD5 CHECKSUMS>>"%CHECKSUM_FILE%"
 
