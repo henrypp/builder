@@ -129,6 +129,11 @@ Section "!${APP_NAME}"
 
 	File /nonfatal /r "${APP_FILES_DIR}\i18n"
 
+	${If} ${APP_NAME_SHORT} == 'errorlookup'
+		SetOutPath $INSTDIR
+
+		File /nonfatal "${APP_FILES_DIR}\32\database.xml"
+	${EndIf}
 	${If} ${APP_NAME_SHORT} == 'simplewall'
 		SetOutPath $ProfilePath
 
