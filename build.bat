@@ -16,8 +16,7 @@ set "TMP_DIRECTORY=%~dp0tmp"
 
 set "PORTABLE_FILE=%OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%-bin.zip"
 set "SETUP_FILE=%OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%-setup.exe"
-set "MD5_FILE=%OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%.md5"
-set "SHA256_FILE=%OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%.sha256"
+set "CHECKSUM_FILE=%OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%.checksum"
 
 rem Create temporary folder with binaries and documentation...
 
@@ -103,25 +102,28 @@ makensis.exe /DAPP_FILES_DIR=%TMP_DIRECTORY% /DAPP_NAME=%APP_NAME% /DAPP_NAME_SH
 
 rem Calculate md5 hash
 
-del /s /f /q "%MD5_FILE%"
+del /s /f /q "%CHECKSUM_FILE%"
 
-md5deep64 -b "%PORTABLE_FILE%">>"%MD5_FILE%"
-md5deep64 -b "%SETUP_FILE%">>"%MD5_FILE%"
-echo #32-bit:>>"%MD5_FILE%"
-md5deep64 -b "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.exe">>"%MD5_FILE%"
-echo #64-bit:>>"%MD5_FILE%"
-md5deep64 -b "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.exe">>"%MD5_FILE%"
+echo #MD5 CHECKSUMS>>"%CHECKSUM_FILE%"
+
+md5deep64 -b "%PORTABLE_FILE%">>"%CHECKSUM_FILE%"
+md5deep64 -b "%SETUP_FILE%">>"%CHECKSUM_FILE%"
+echo #32-bit:>>"%CHECKSUM_FILE%"
+md5deep64 -b "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.exe">>"%CHECKSUM_FILE%"
+echo #64-bit:>>"%CHECKSUM_FILE%"
+md5deep64 -b "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.exe">>"%CHECKSUM_FILE%"
 
 rem Calculate sha256 hash
 
-del /s /f /q "%SHA256_FILE%"
+echo.>>"%CHECKSUM_FILE%"
+echo #SHA256 CHECKSUMS>>"%CHECKSUM_FILE%"
 
-sha256deep64 -b "%PORTABLE_FILE%">>"%SHA256_FILE%"
-sha256deep64 -b "%SETUP_FILE%">>"%SHA256_FILE%"
-echo #32-bit:>>"%SHA256_FILE%"
-sha256deep64 -b "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.exe">>"%SHA256_FILE%"
-echo #64-bit:>>"%SHA256_FILE%"
-sha256deep64 -b "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.exe">>"%SHA256_FILE%"
+sha256deep64 -b "%PORTABLE_FILE%">>"%CHECKSUM_FILE%"
+sha256deep64 -b "%SETUP_FILE%">>"%CHECKSUM_FILE%"
+echo #32-bit:>>"%CHECKSUM_FILE%"
+sha256deep64 -b "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.exe">>"%CHECKSUM_FILE%"
+echo #64-bit:>>"%CHECKSUM_FILE%"
+sha256deep64 -b "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.exe">>"%CHECKSUM_FILE%"
 
 rem Cleanup
 
