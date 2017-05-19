@@ -16,6 +16,9 @@
 	$cfg_force_delete = [
 	];
 
+	$cfg_force_rename = [
+	];
+
 	$original_content = mb_convert_encoding (file_get_contents ($full_path), 'UTF-8', 'UTF-16LE');
 	$original_array = parse_ini_string ($original_content, FALSE, INI_SCANNER_RAW);
 
@@ -43,16 +46,21 @@
 			if (in_array ($key, $cfg_force_delete))
 				continue;
 
-			$line = $val;
+			$text = $val;
 
-			if (!empty ($new_array[$key]))
+			if (array_key_exists ($key, $cfg_force_rename))
 			{
-				// reset only predefined keys or "russian" locale ;)
-				if (!in_array ($key, $cfg_force_default) || strcasecmp ($filename, 'russian.ini') == 0)
-					$line = $new_array[$key];
+				// rename key
+				$text = $new_array[$cfg_force_rename[$key]];
+			}
+			else if (!empty ($new_array[$key]))
+			{
+					// reset only predefined keys or "russian" locale ;)
+					if (!in_array ($key, $cfg_force_default) || strcasecmp ($filename, 'russian.ini') == 0)
+						$text = $new_array[$key];
 			}
 
-			$buffer .= sprintf ('%s=%s' . PHP_EOL, $key, $line);
+			$buffer .= sprintf ('%s=%s' . PHP_EOL, $key, $text);
 		}
 
 		unset ($key, $val);
