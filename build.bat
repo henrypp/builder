@@ -16,7 +16,7 @@ set "TMP_DIRECTORY=%~dp0tmp"
 
 set "PORTABLE_FILE=%OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%-bin.zip"
 set "SETUP_FILE=%OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%-setup.exe"
-set "CHECKSUM_FILE=%OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%.checksum"
+set "CHECKSUM_FILE=%OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%.sha256"
 
 rem Create temporary folder with binaries and documentation...
 
@@ -86,6 +86,16 @@ copy /y "%BIN_DIRECTORY%\64\*.exe" "%TMP_DIRECTORY%\64\*.exe"
 copy /y "%BIN_DIRECTORY%\64\*.scr" "%TMP_DIRECTORY%\64\*.scr"
 copy /y "%BIN_DIRECTORY%\64\*.dll" "%TMP_DIRECTORY%\64\*.dll"
 
+rem Sign binaries
+
+if exist "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.exe" (
+	gpg --output "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.sig" --detach-sign "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.exe"
+	gpg --output "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.sig" --detach-sign "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.exe"
+) else if exist "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.scr" (
+	gpg --output "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.sig" --detach-sign "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.scr"
+	gpg --output "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.sig" --detach-sign "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.scr"
+)
+
 rem Create portable version
 
 7z.exe a -mm=LZMA -mx=9 -md=64m -mmf=hc4 -mfb=273 "%PORTABLE_FILE%" "%TMP_DIRECTORY%\*"
@@ -104,28 +114,14 @@ copy /y "%BIN_DIRECTORY%\..\src\res\100.ico" "logo.ico"
 
 makensis.exe /DAPP_FILES_DIR=%TMP_DIRECTORY% /DAPP_NAME=%APP_NAME% /DAPP_NAME_SHORT=%APP_NAME_SHORT% /DAPP_VERSION=%APP_VERSION% /X"OutFile %SETUP_FILE%" installer.nsi
 
-rem Calculate md5 hash
+rem Calculate sha256 checksum
 
-echo #MD5 CHECKSUMS>>"%CHECKSUM_FILE%"
-
-md5deep64 -b "%PORTABLE_FILE%">>"%CHECKSUM_FILE%"
-md5deep64 -b "%SETUP_FILE%">>"%CHECKSUM_FILE%"
+sha256deep64 -s -b -k "%PORTABLE_FILE%">>"%CHECKSUM_FILE%"
+sha256deep64 -s -b -k "%SETUP_FILE%">>"%CHECKSUM_FILE%"
 echo #32-bit:>>"%CHECKSUM_FILE%"
-md5deep64 -b "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.exe">>"%CHECKSUM_FILE%"
+sha256deep64 -s -b -k "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.exe">>"%CHECKSUM_FILE%"
 echo #64-bit:>>"%CHECKSUM_FILE%"
-md5deep64 -b "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.exe">>"%CHECKSUM_FILE%"
-
-rem Calculate sha256 hash
-
-echo.>>"%CHECKSUM_FILE%"
-echo #SHA256 CHECKSUMS>>"%CHECKSUM_FILE%"
-
-sha256deep64 -b "%PORTABLE_FILE%">>"%CHECKSUM_FILE%"
-sha256deep64 -b "%SETUP_FILE%">>"%CHECKSUM_FILE%"
-echo #32-bit:>>"%CHECKSUM_FILE%"
-sha256deep64 -b "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.exe">>"%CHECKSUM_FILE%"
-echo #64-bit:>>"%CHECKSUM_FILE%"
-sha256deep64 -b "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.exe">>"%CHECKSUM_FILE%"
+sha256deep64 -s -b -k "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.exe">>"%CHECKSUM_FILE%"
 
 rem Cleanup
 

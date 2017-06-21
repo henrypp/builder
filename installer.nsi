@@ -117,8 +117,10 @@ Section "!${APP_NAME}"
 
 	${If} ${RunningX64}
 		File "${APP_FILES_DIR}\64\${APP_NAME_SHORT}.exe"
+		File /nonfatal "${APP_FILES_DIR}\64\${APP_NAME_SHORT}.sig"
 	${Else}
 		File "${APP_FILES_DIR}\32\${APP_NAME_SHORT}.exe"
+		File /nonfatal "${APP_FILES_DIR}\32\${APP_NAME_SHORT}.sig"
 	${EndIf}
 
 	File "${APP_FILES_DIR}\History.txt"
