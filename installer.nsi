@@ -135,6 +135,7 @@ Section "!${APP_NAME}"
 		SetOutPath $ProfilePath
 
 		File /nonfatal "${APP_FILES_DIR}\32\blocklist.xml"
+		File /nonfatal "${APP_FILES_DIR}\32\blocklist_full.xml"
 		File /nonfatal "${APP_FILES_DIR}\32\rules_system.xml"
 
 		SetOverwrite off
@@ -203,6 +204,7 @@ Section "Uninstall"
 	${If} ${APP_NAME_SHORT} == 'simplewall'
 		Delete "$INSTDIR\apps.xml"
 		Delete "$INSTDIR\blocklist.xml"
+		Delete "$INSTDIR\blocklist_full.xml"
 		Delete "$INSTDIR\rules_system.xml"
 		Delete "$INSTDIR\rules_custom.xml"
 	${EndIf}
