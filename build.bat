@@ -16,6 +16,7 @@ set "TMP_DIRECTORY=%~dp0tmp"
 
 set "PORTABLE_FILE=%OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%-bin.zip"
 set "SETUP_FILE=%OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%-setup.exe"
+set "SETUP_FILE_SIGN=%OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%-setup.sig"
 set "CHECKSUM_FILE=%OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%.sha256"
 
 rem Create temporary folder with binaries and documentation...
@@ -98,7 +99,7 @@ if exist "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.exe" (
 
 rem Create portable version
 
-7z.exe a -mm=LZMA -mx=9 -md=64m -mmf=hc4 -mfb=273 "%PORTABLE_FILE%" "%TMP_DIRECTORY%\*"
+7z.exe a -mm=Deflate64 -mx=9 -mfb=128 -mpass=10 "%PORTABLE_FILE%" "%TMP_DIRECTORY%\*"
 
 rem Create setup version
 
@@ -113,6 +114,9 @@ if exist "%BIN_DIRECTORY%\i18n" (
 copy /y "%BIN_DIRECTORY%\..\src\res\100.ico" "logo.ico"
 
 makensis.exe /DAPP_FILES_DIR=%TMP_DIRECTORY% /DAPP_NAME=%APP_NAME% /DAPP_NAME_SHORT=%APP_NAME_SHORT% /DAPP_VERSION=%APP_VERSION% /X"OutFile %SETUP_FILE%" installer.nsi
+
+del /s /f /q "%SETUP_FILE_SIGN%"
+gpg --output "%SETUP_FILE_SIGN%" --detach-sign "%SETUP_FILE%"
 
 rem Calculate sha256 checksum
 
