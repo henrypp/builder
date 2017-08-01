@@ -36,9 +36,21 @@ copy /y "%BIN_DIRECTORY%\History.txt" "%BIN_DIRECTORY%\..\CHANGELOG.md"
 
 rem Copy documentation
 
-copy /y "%BIN_DIRECTORY%\Readme.txt" "%TMP_DIRECTORY%\Readme.txt"
-copy /y "%BIN_DIRECTORY%\History.txt" "%TMP_DIRECTORY%\History.txt"
-copy /y "%BIN_DIRECTORY%\License.txt" "%TMP_DIRECTORY%\License.txt"
+if exist "%BIN_DIRECTORY%\Readme.txt" (
+	copy /y "%BIN_DIRECTORY%\Readme.txt" "%TMP_DIRECTORY%\Readme.txt"
+)
+
+if exist "%BIN_DIRECTORY%\History.txt" (
+	copy /y "%BIN_DIRECTORY%\History.txt" "%TMP_DIRECTORY%\History.txt"
+)
+
+if exist "%BIN_DIRECTORY%\License.txt" (
+	copy /y "%BIN_DIRECTORY%\License.txt" "%TMP_DIRECTORY%\License.txt"
+)
+
+if exist "%BIN_DIRECTORY%\FAQ.txt" (
+	copy /y "%BIN_DIRECTORY%\FAQ.txt" "%TMP_DIRECTORY%\FAQ.txt"
+)
 
 rem Copy configuration
 
@@ -103,29 +115,46 @@ rem Create portable version
 
 rem Create setup version
 
-rmdir /s /q "%TMP_DIRECTORY%\32\i18n"
-rmdir /s /q "%TMP_DIRECTORY%\64\i18n"
+if not %APP_NAME%=="" (
+	rmdir /s /q "%TMP_DIRECTORY%\32\i18n"
+	rmdir /s /q "%TMP_DIRECTORY%\64\i18n"
+	
+	if exist "%BIN_DIRECTORY%\i18n" (
+		mkdir "%TMP_DIRECTORY%\i18n"
+		copy /y "%BIN_DIRECTORY%\i18n" "%TMP_DIRECTORY%\i18n"
+	)
 
-if exist "%BIN_DIRECTORY%\i18n" (
-	mkdir "%TMP_DIRECTORY%\i18n"
-	copy /y "%BIN_DIRECTORY%\i18n" "%TMP_DIRECTORY%\i18n"
+	copy /y "%BIN_DIRECTORY%\..\src\res\100.ico" "logo.ico"
+	
+	makensis.exe /DAPP_FILES_DIR=%TMP_DIRECTORY% /DAPP_NAME=%APP_NAME% /DAPP_NAME_SHORT=%APP_NAME_SHORT% /DAPP_VERSION=%APP_VERSION% /X"OutFile %SETUP_FILE%" installer.nsi
+	
+	del /s /f /q "%SETUP_FILE_SIGN%"
+	gpg --output "%SETUP_FILE_SIGN%" --detach-sign "%SETUP_FILE%"
 )
-
-copy /y "%BIN_DIRECTORY%\..\src\res\100.ico" "logo.ico"
-
-makensis.exe /DAPP_FILES_DIR=%TMP_DIRECTORY% /DAPP_NAME=%APP_NAME% /DAPP_NAME_SHORT=%APP_NAME_SHORT% /DAPP_VERSION=%APP_VERSION% /X"OutFile %SETUP_FILE%" installer.nsi
-
-del /s /f /q "%SETUP_FILE_SIGN%"
-gpg --output "%SETUP_FILE_SIGN%" --detach-sign "%SETUP_FILE%"
 
 rem Calculate sha256 checksum
 
-sha256deep64 -s -b -k "%PORTABLE_FILE%">>"%CHECKSUM_FILE%"
-sha256deep64 -s -b -k "%SETUP_FILE%">>"%CHECKSUM_FILE%"
-echo #32-bit:>>"%CHECKSUM_FILE%"
-sha256deep64 -s -b -k "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.exe">>"%CHECKSUM_FILE%"
-echo #64-bit:>>"%CHECKSUM_FILE%"
-sha256deep64 -s -b -k "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.exe">>"%CHECKSUM_FILE%"
+if exist "%PORTABLE_FILE%" (
+	sha256deep64 -s -b -k "%PORTABLE_FILE%">>"%CHECKSUM_FILE%"
+)
+
+if exist "%SETUP_FILE%" (
+	sha256deep64 -s -b -k "%SETUP_FILE%">>"%CHECKSUM_FILE%"
+)
+
+if exist "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.exe" (
+	echo #32-bit:>>"%CHECKSUM_FILE%"
+	sha256deep64 -s -b -k "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.exe">>"%CHECKSUM_FILE%"
+	echo #64-bit:>>"%CHECKSUM_FILE%"
+	sha256deep64 -s -b -k "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.exe">>"%CHECKSUM_FILE%"
+) else if exist "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.scr" (
+	echo #32-bit:>>"%CHECKSUM_FILE%"
+	sha256deep64 -s -b -k "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.scr">>"%CHECKSUM_FILE%"
+	echo #64-bit:>>"%CHECKSUM_FILE%"
+	sha256deep64 -s -b -k "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.scr">>"%CHECKSUM_FILE%"
+)
+
+
 
 rem Cleanup
 

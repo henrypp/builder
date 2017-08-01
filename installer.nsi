@@ -126,6 +126,7 @@ Section "!${APP_NAME}"
 	File "${APP_FILES_DIR}\History.txt"
 	File "${APP_FILES_DIR}\License.txt"
 	File "${APP_FILES_DIR}\Readme.txt"
+	File /nonfatal "${APP_FILES_DIR}\FAQ.txt"
 
 	WriteUninstaller $INSTDIR\uninstall.exe
 
@@ -158,6 +159,13 @@ Section "Create start menu shortcuts" SecShortcut2
 	CreateShortCut "$SMPROGRAMS\${APP_NAME}\History.lnk" "$INSTDIR\History.txt"
 	CreateShortCut "$SMPROGRAMS\${APP_NAME}\Readme.lnk" "$INSTDIR\Readme.txt"
 	CreateShortCut "$SMPROGRAMS\${APP_NAME}\Uninstall.lnk" "$INSTDIR\uninstall.exe"
+
+	IfFileExists "$INSTDIR\FAQ.txt" create not_create
+
+	create:
+	CreateShortCut "$SMPROGRAMS\${APP_NAME}\FAQ.lnk" "$INSTDIR\FAQ.txt"
+
+	not_create:
 SectionEnd
 
 Section /o "Store settings in application directory (portable mode)" SecPortable
@@ -200,6 +208,7 @@ Section "Uninstall"
 	Delete "$INSTDIR\Readme.txt"
 	Delete "$INSTDIR\History.txt"
 	Delete "$INSTDIR\License.txt"
+	Delete "$INSTDIR\FAQ.txt"
 
 	${If} ${APP_NAME_SHORT} == 'simplewall'
 		Delete "$INSTDIR\apps.xml"
