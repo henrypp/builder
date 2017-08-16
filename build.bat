@@ -32,7 +32,13 @@ mkdir "%TMP_DIRECTORY%\64"
 
 rem Prepare for git commits
 
-copy /y "%BIN_DIRECTORY%\History.txt" "%BIN_DIRECTORY%\..\CHANGELOG.md"
+if exist "%BIN_DIRECTORY%\History.txt" (
+	copy /y "%BIN_DIRECTORY%\History.txt" "%BIN_DIRECTORY%\..\CHANGELOG.md"
+)
+
+if exist "%BIN_DIRECTORY%\FAQ.txt" (
+	copy /y "%BIN_DIRECTORY%\FAQ.txt" "%BIN_DIRECTORY%\..\FAQ.md"
+)
 
 rem Copy documentation
 
