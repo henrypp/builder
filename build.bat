@@ -36,10 +36,6 @@ if exist "%BIN_DIRECTORY%\History.txt" (
 	copy /y "%BIN_DIRECTORY%\History.txt" "%BIN_DIRECTORY%\..\CHANGELOG.md"
 )
 
-if exist "%BIN_DIRECTORY%\FAQ.txt" (
-	copy /y "%BIN_DIRECTORY%\FAQ.txt" "%BIN_DIRECTORY%\..\FAQ.md"
-)
-
 rem Copy documentation
 
 if exist "%BIN_DIRECTORY%\Readme.txt" (
