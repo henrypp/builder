@@ -25,6 +25,7 @@ del /s /f /q "%TMP_DIRECTORY%\*"
 
 del /s /f /q "%PORTABLE_FILE%"
 del /s /f /q "%SETUP_FILE%"
+del /s /f /q "%SETUP_FILE_SIGN%"
 del /s /f /q "%CHECKSUM_FILE%"
 
 mkdir "%TMP_DIRECTORY%\32"
