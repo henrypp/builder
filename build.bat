@@ -40,19 +40,23 @@ if exist "%BIN_DIRECTORY%\History.txt" (
 rem Copy documentation
 
 if exist "%BIN_DIRECTORY%\Readme.txt" (
-	copy /y "%BIN_DIRECTORY%\Readme.txt" "%TMP_DIRECTORY%\Readme.txt"
+	copy /y "%BIN_DIRECTORY%\Readme.txt" "%TMP_DIRECTORY%\32\Readme.txt"
+	copy /y "%BIN_DIRECTORY%\Readme.txt" "%TMP_DIRECTORY%\64\Readme.txt"
 )
 
 if exist "%BIN_DIRECTORY%\History.txt" (
-	copy /y "%BIN_DIRECTORY%\History.txt" "%TMP_DIRECTORY%\History.txt"
+	copy /y "%BIN_DIRECTORY%\History.txt" "%TMP_DIRECTORY%\32\History.txt"
+	copy /y "%BIN_DIRECTORY%\History.txt" "%TMP_DIRECTORY%\64\History.txt"
 )
 
 if exist "%BIN_DIRECTORY%\License.txt" (
-	copy /y "%BIN_DIRECTORY%\License.txt" "%TMP_DIRECTORY%\License.txt"
+	copy /y "%BIN_DIRECTORY%\License.txt" "%TMP_DIRECTORY%\32\License.txt"
+	copy /y "%BIN_DIRECTORY%\License.txt" "%TMP_DIRECTORY%\64\License.txt"
 )
 
 if exist "%BIN_DIRECTORY%\FAQ.txt" (
-	copy /y "%BIN_DIRECTORY%\FAQ.txt" "%TMP_DIRECTORY%\FAQ.txt"
+	copy /y "%BIN_DIRECTORY%\FAQ.txt" "%TMP_DIRECTORY%\32\FAQ.txt"
+	copy /y "%BIN_DIRECTORY%\FAQ.txt" "%TMP_DIRECTORY%\64\FAQ.txt"
 )
 
 rem Copy configuration
@@ -121,7 +125,12 @@ rem Create setup version
 if not %APP_NAME%=="" (
 	rmdir /s /q "%TMP_DIRECTORY%\32\i18n"
 	rmdir /s /q "%TMP_DIRECTORY%\64\i18n"
-	
+
+	copy /y "%TMP_DIRECTORY%\32\*.txt" "%TMP_DIRECTORY%\*.txt"
+
+	del /s /f /q "%TMP_DIRECTORY%\32\*.txt"
+	del /s /f /q "%TMP_DIRECTORY%\64\*.txt"
+
 	if exist "%BIN_DIRECTORY%\i18n" (
 		mkdir "%TMP_DIRECTORY%\i18n"
 		copy /y "%BIN_DIRECTORY%\i18n" "%TMP_DIRECTORY%\i18n"
