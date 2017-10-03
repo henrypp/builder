@@ -184,9 +184,6 @@ Section "Uninstall"
 		ExecWait '"$INSTDIR\${APP_NAME_SHORT}.exe" /uninstall'
 	${EndIf}
 
-	; Destroy process
-	nsExec::Exec 'taskkill /f /im "${APP_NAME_SHORT}.exe"'
-
 	; Remove "skipuac" entry
 	nsExec::Exec 'schtasks /delete /f /tn "${APP_NAME_SHORT}SkipUac"'
 
@@ -204,6 +201,7 @@ Section "Uninstall"
 
 	; Remove install directory
 	Delete "$INSTDIR\${APP_NAME_SHORT}.exe"
+	Delete "$INSTDIR\${APP_NAME_SHORT}.sig"
 	Delete "$INSTDIR\${APP_NAME_SHORT}.ini"
 	Delete "$INSTDIR\Readme.txt"
 	Delete "$INSTDIR\History.txt"
