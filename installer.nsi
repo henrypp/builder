@@ -14,7 +14,7 @@ Var /GLOBAL ProfilePath
 ; Defines
 !define APP_AUTHOR "Henry++"
 !define APP_WEBSITE_HOST "www.henrypp.org"
-!define APP_WEBSITE "http://${APP_WEBSITE_HOST}"
+!define APP_WEBSITE "https://${APP_WEBSITE_HOST}"
 
 !define COPYRIGHT "(c) ${APP_AUTHOR}. All rights reserved."
 !define LICENSE_FILE "${APP_FILES_DIR}\License.txt"
