@@ -51,7 +51,12 @@
 			if (array_key_exists ($key, $cfg_force_rename))
 			{
 				// rename key
-				$text = $new_array[$cfg_force_rename[$key]];
+				if(!empty($new_array[$cfg_force_rename[$key]]))
+					$text = $new_array[$cfg_force_rename[$key]];
+				else if(!empty($new_array[$key]))
+					$text = $new_array[$key];
+
+				$key = $cfg_force_rename[$key];
 			}
 			else if (!empty ($new_array[$key]))
 			{

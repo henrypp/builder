@@ -214,6 +214,7 @@ Section "Uninstall"
 		Delete "$INSTDIR\blocklist_full.xml"
 		Delete "$INSTDIR\rules_system.xml"
 		Delete "$INSTDIR\rules_custom.xml"
+		Delete "$INSTDIR\rules_config.xml"
 	${EndIf}
 
 	Delete "$INSTDIR\Uninstall.exe"
