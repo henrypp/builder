@@ -132,18 +132,6 @@ Section "!${APP_NAME}"
 
 	File /nonfatal /r "${APP_FILES_DIR}\i18n"
 
-	${If} ${APP_NAME_SHORT} == 'simplewall'
-		SetOutPath $ProfilePath
-
-		File /nonfatal "${APP_FILES_DIR}\32\blocklist.xml"
-		File /nonfatal "${APP_FILES_DIR}\32\blocklist_full.xml"
-		File /nonfatal "${APP_FILES_DIR}\32\rules_system.xml"
-
-		SetOverwrite off
-		File /nonfatal "${APP_FILES_DIR}\32\rules_custom.xml"
-		SetOverwrite on
-	${EndIf}
-
 	Call CreateUninstallEntry
 SectionEnd
 
@@ -159,13 +147,6 @@ Section "Create start menu shortcuts" SecShortcut2
 	CreateShortCut "$SMPROGRAMS\${APP_NAME}\History.lnk" "$INSTDIR\History.txt"
 	CreateShortCut "$SMPROGRAMS\${APP_NAME}\Readme.lnk" "$INSTDIR\Readme.txt"
 	CreateShortCut "$SMPROGRAMS\${APP_NAME}\Uninstall.lnk" "$INSTDIR\uninstall.exe"
-
-	IfFileExists "$INSTDIR\FAQ.txt" create not_create
-
-	create:
-	CreateShortCut "$SMPROGRAMS\${APP_NAME}\FAQ.lnk" "$INSTDIR\FAQ.txt"
-
-	not_create:
 SectionEnd
 
 Section /o "Store settings in application directory (portable mode)" SecPortable

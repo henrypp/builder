@@ -12,7 +12,7 @@ set "APP_VERSION=%3"
 
 set "BIN_DIRECTORY=%~dp0..\%APP_NAME_SHORT%\bin"
 set "OUT_DIRECTORY=%UserProfile%\Desktop"
-set "TMP_DIRECTORY=%~dp0tmp"
+set "TMP_DIRECTORY=%~dp0tmp\%APP_NAME%"
 
 set "PORTABLE_FILE=%OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%-bin.zip"
 set "SETUP_FILE=%OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%-setup.exe"
@@ -71,11 +71,9 @@ if exist "%BIN_DIRECTORY%\%APP_NAME_SHORT%.ini" (
 
 copy /y "%BIN_DIRECTORY%\*.bat" "%TMP_DIRECTORY%\32\*.bat"
 copy /y "%BIN_DIRECTORY%\*.reg" "%TMP_DIRECTORY%\32\*.reg"
-copy /y "%BIN_DIRECTORY%\*.xml" "%TMP_DIRECTORY%\32\*.xml"
 
 copy /y "%BIN_DIRECTORY%\*.bat" "%TMP_DIRECTORY%\64\*.bat"
 copy /y "%BIN_DIRECTORY%\*.reg" "%TMP_DIRECTORY%\64\*.reg"
-copy /y "%BIN_DIRECTORY%\*.xml" "%TMP_DIRECTORY%\64\*.xml"
 
 rem Copy localization
 
@@ -118,7 +116,7 @@ if exist "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.exe" (
 
 rem Create portable version
 
-7z.exe a -mm=Deflate64 -mx=9 -mfb=128 -mpass=10 "%PORTABLE_FILE%" "%TMP_DIRECTORY%\*"
+7z.exe a -mm=Deflate64 -mx=9 -mfb=128 -mpass=10 "%PORTABLE_FILE%" "%TMP_DIRECTORY%"
 
 rem Create setup version
 
