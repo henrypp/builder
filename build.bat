@@ -64,10 +64,10 @@ rem Copy configuration
 if exist "%BIN_DIRECTORY%\%APP_NAME_SHORT%.ini" (
 	copy /y "%BIN_DIRECTORY%\%APP_NAME_SHORT%.ini" "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.ini"
 	copy /y "%BIN_DIRECTORY%\%APP_NAME_SHORT%.ini" "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.ini"
-) else (
-	echo. 2>"%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.ini"
-	echo. 2>"%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.ini"
 )
+
+echo|set /p="#PORTABLE#">"%TMP_DIRECTORY%\32\portable.dat"
+echo|set /p="#PORTABLE#">"%TMP_DIRECTORY%\64\portable.dat"
 
 copy /y "%BIN_DIRECTORY%\*.bat" "%TMP_DIRECTORY%\32\*.bat"
 copy /y "%BIN_DIRECTORY%\*.reg" "%TMP_DIRECTORY%\32\*.reg"

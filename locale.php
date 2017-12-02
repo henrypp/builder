@@ -11,6 +11,7 @@
 	}
 
 	$cfg_force_default = [
+		'IDS_QUESTION_WARNING'
 	];
 
 	$cfg_force_delete = [

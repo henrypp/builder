@@ -154,7 +154,8 @@ Section /o "Store settings in application directory (portable mode)" SecPortable
 
 	; Create empty .ini
 	not_portable:
-	FileOpen $0 "$INSTDIR\${APP_NAME_SHORT}.ini" w
+	FileOpen $0 "$INSTDIR\portable.dat" w
+	FileWrite $0 "#PORTABLE#" ; we write a new line
 	FileClose $0
 
 	portable:
@@ -169,7 +170,10 @@ Section "Uninstall"
 	nsExec::Exec 'schtasks /delete /f /tn "${APP_NAME_SHORT}SkipUac"'
 
 	; Remove configuration from %appdata% only for non-portable mode
-	IfFileExists "$INSTDIR\${APP_NAME_SHORT}.ini" portable not_portable
+	IfFileExists "$INSTDIR\${APP_NAME_SHORT}.ini" portable check2
+
+	check2:
+	IfFileExists "$INSTDIR\portable.dat" portable not_portable
 
 	not_portable:
 	RMDir /r "$APPDATA\${APP_AUTHOR}\${APP_NAME}"
@@ -184,6 +188,7 @@ Section "Uninstall"
 	Delete "$INSTDIR\${APP_NAME_SHORT}.exe"
 	Delete "$INSTDIR\${APP_NAME_SHORT}.sig"
 	Delete "$INSTDIR\${APP_NAME_SHORT}.ini"
+	Delete "$INSTDIR\portable.dat"
 	Delete "$INSTDIR\Readme.txt"
 	Delete "$INSTDIR\History.txt"
 	Delete "$INSTDIR\License.txt"
@@ -192,7 +197,6 @@ Section "Uninstall"
 	${If} ${APP_NAME_SHORT} == 'simplewall'
 		Delete "$INSTDIR\apps.xml"
 		Delete "$INSTDIR\blocklist.xml"
-		Delete "$INSTDIR\blocklist_full.xml"
 		Delete "$INSTDIR\rules_system.xml"
 		Delete "$INSTDIR\rules_custom.xml"
 		Delete "$INSTDIR\rules_config.xml"
@@ -216,10 +220,12 @@ Function RunApplication
 FunctionEnd
 
 Function IsPortable
-	IfFileExists "$INSTDIR\${APP_NAME_SHORT}.ini" portable not_portable
+	IfFileExists "$INSTDIR\${APP_NAME_SHORT}.ini" portable check2
+
+	check2:
+	IfFileExists "$INSTDIR\portable.dat" portable not_portable
 
 	portable:
-
 	SectionSetFlags ${SecPortable} ${SF_SELECTED}
 
 	SectionSetFlags ${SecShortcut1} 0
@@ -228,7 +234,6 @@ Function IsPortable
 	Goto end
 	
 	not_portable:
-
 	SectionSetFlags ${SecPortable} 0
 
 	SectionSetFlags ${SecShortcut1} ${SF_SELECTED}
