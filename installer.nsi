@@ -123,14 +123,12 @@ Section "!${APP_NAME}"
 		File /nonfatal "${APP_FILES_DIR}\32\${APP_NAME_SHORT}.sig"
 	${EndIf}
 
+	File /nonfatal "${APP_FILES_DIR}\${APP_NAME_SHORT}.lng"
 	File "${APP_FILES_DIR}\History.txt"
 	File "${APP_FILES_DIR}\License.txt"
 	File "${APP_FILES_DIR}\Readme.txt"
-	File /nonfatal "${APP_FILES_DIR}\FAQ.txt"
 
 	WriteUninstaller $INSTDIR\uninstall.exe
-
-	File /nonfatal /r "${APP_FILES_DIR}\i18n"
 
 	Call CreateUninstallEntry
 SectionEnd
@@ -187,6 +185,7 @@ Section "Uninstall"
 	; Remove install directory
 	Delete "$INSTDIR\${APP_NAME_SHORT}.exe"
 	Delete "$INSTDIR\${APP_NAME_SHORT}.sig"
+	Delete "$INSTDIR\${APP_NAME_SHORT}.lng"
 	Delete "$INSTDIR\${APP_NAME_SHORT}.ini"
 	Delete "$INSTDIR\portable.dat"
 	Delete "$INSTDIR\Readme.txt"

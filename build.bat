@@ -77,12 +77,9 @@ copy /y "%BIN_DIRECTORY%\*.reg" "%TMP_DIRECTORY%\64\*.reg"
 
 rem Copy localization
 
-if exist "%BIN_DIRECTORY%\i18n" (
-	mkdir "%TMP_DIRECTORY%\32\i18n"
-	mkdir "%TMP_DIRECTORY%\64\i18n"
-
-	copy /y "%BIN_DIRECTORY%\i18n" "%TMP_DIRECTORY%\32\i18n"
-	copy /y "%BIN_DIRECTORY%\i18n" "%TMP_DIRECTORY%\64\i18n"
+if exist "%BIN_DIRECTORY%\%APP_NAME_SHORT%.lng" (
+	copy /y "%BIN_DIRECTORY%\%APP_NAME_SHORT%.lng" "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.lng"
+	copy /y "%BIN_DIRECTORY%\%APP_NAME_SHORT%.lng" "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.lng"
 )
 
 rem Copy plugins
@@ -121,13 +118,14 @@ rem Create portable version
 rem Create setup version
 
 if not %APP_NAME%=="" (
-	rmdir /s /q "%TMP_DIRECTORY%\32\i18n"
-	rmdir /s /q "%TMP_DIRECTORY%\64\i18n"
-
 	copy /y "%TMP_DIRECTORY%\32\*.txt" "%TMP_DIRECTORY%\*.txt"
+	copy /y "%TMP_DIRECTORY%\32\*.lng" "%TMP_DIRECTORY%\*.lng"
 
 	del /s /f /q "%TMP_DIRECTORY%\32\*.txt"
 	del /s /f /q "%TMP_DIRECTORY%\64\*.txt"
+
+	del /s /f /q "%TMP_DIRECTORY%\32\*.lng"
+	del /s /f /q "%TMP_DIRECTORY%\64\*.lng"
 
 	if exist "%BIN_DIRECTORY%\i18n" (
 		mkdir "%TMP_DIRECTORY%\i18n"
@@ -163,8 +161,6 @@ if exist "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.exe" (
 	echo #64-bit:>>"%CHECKSUM_FILE%"
 	sha256deep64 -s -b -k "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.scr">>"%CHECKSUM_FILE%"
 )
-
-
 
 rem Cleanup
 
