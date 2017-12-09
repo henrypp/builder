@@ -12,7 +12,7 @@ set "APP_VERSION=%3"
 
 set "BIN_DIRECTORY=%~dp0..\%APP_NAME_SHORT%\bin"
 set "OUT_DIRECTORY=%UserProfile%\Desktop"
-set "TMP_DIRECTORY=%~dp0tmp\%APP_NAME%"
+set "TMP_DIRECTORY=%~dp0tmp\%APP_NAME_SHORT%"
 
 set "PORTABLE_FILE=%OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%-bin.zip"
 set "SETUP_FILE=%OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%-setup.exe"
@@ -171,5 +171,7 @@ rmdir /s /q "%TMP_DIRECTORY%\i18n"
 del /s /f /q "%TMP_DIRECTORY%\*"
 
 del /s /f /q "logo.ico"
+
+rmdir /q "%TMP_DIRECTORY%"
 
 pause
