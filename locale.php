@@ -5,17 +5,15 @@
 		return false;
 	}
 
-	$eol = "\r\n";
-
 	$project_name = $argv[1];
 	$directory = realpath ('.\\..\\' . $project_name .'\\bin\\i18n');
 	$example_file = $directory . '\\!example.txt';
 	$lng_path = $directory . '\\..\\'. $project_name .'.lng';
-	$lng_header = sprintf ("; Project name: %s" . $eol . "; Last-Modified: %s" . $eol . $eol, $project_name, date ('r', time ()));
+	$lng_header = sprintf ('; Project name: %s' . PHP_EOL . '; Last-Modified: %s' . PHP_EOL . PHP_EOL, $project_name, date ('r', time ()));
 
 	if (!file_exists ($example_file))
 	{
-		printf ('ERROR: "%s" not found in "%s" directory' . $eol, pathinfo ($example_file, PATHINFO_BASENAME), $directory);
+		printf ('ERROR: "%s" not found in "%s" directory' . PHP_EOL, pathinfo ($example_file, PATHINFO_BASENAME), $directory);
 		return false;
 	}
 
@@ -33,22 +31,18 @@
 
 	$ini_array = glob ($directory .'\\*.ini');
 
-	$hfile = fopen ($lng_path, 'wb');
 	$buffer_total = $lng_header;
-
-	if ($hfile)
-		fwrite ($hfile, $lng_header);
 
 	foreach ($ini_array as $ini_file)
 	{
 		$locale_name = pathinfo ($ini_file, PATHINFO_FILENAME);
 
-		printf ('Processing "%s" locale...' . $eol, $ini_file);
+		printf ('Processing "%s" locale...' . PHP_EOL, $ini_file);
 
 		$new_content = conv (file_get_contents ($ini_file), false);
 		$new_array = parse_ini_string ($new_content, false, INI_SCANNER_RAW);
 
-		$buffer = sprintf ('[%s]' . $eol, $locale_name);
+		$buffer = sprintf ('[%s]' . PHP_EOL, $locale_name);
 
 		foreach ($original_array as $key => $val)
 		{
@@ -76,20 +70,21 @@
 					$text = $new_array[$key];
 			}
 
-			$buffer .= sprintf ('%s=%s' . $eol, $key, $text);
+			$buffer .= sprintf ('%s=%s' . PHP_EOL, $key, $text);
 		}
 
 		unset ($key, $val);
 
-		$buffer_total .= $buffer . $eol;
 		file_put_contents ($ini_file, conv ($buffer, true));
+		$buffer_total .= $buffer . PHP_EOL;
 	}
 
-	if ($hfile)
-		fwrite ($hfile, conv ($buffer_total, true));
+	file_put_contents ($lng_path, conv ($buffer_total, true));
 
-	if ($hfile)
-		fclose ($hfile);
+	function conv ($text, $to_utf16)
+	{
+		$result = mb_convert_encoding ($text, $to_utf16 ? 'UTF-16LE' : 'UTF-8', $to_utf16 ? 'UTF-8' : 'UTF-16LE');
 
-	function conv ($text, $to_utf16) { return mb_convert_encoding ($text, $to_utf16 ? 'UTF-16LE' : 'UTF-8', $to_utf16 ? 'UTF-8' : 'UTF-16LE'); }
+		return $to_utf16 ? "\xFF\xFE" . $result : $result;
+	}
 ?>
