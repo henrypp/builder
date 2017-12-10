@@ -12,7 +12,7 @@ set "APP_VERSION=%3"
 
 set "BIN_DIRECTORY=%~dp0..\%APP_NAME_SHORT%\bin"
 set "OUT_DIRECTORY=%UserProfile%\Desktop"
-set "TMP_DIRECTORY=%~dp0tmp\%APP_NAME_SHORT%"
+set "TMP_DIRECTORY=%~dp0TEMP\%APP_NAME_SHORT%"
 
 set "PORTABLE_FILE=%OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%-bin.zip"
 set "SETUP_FILE=%OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%-setup.exe"
@@ -35,6 +35,10 @@ rem Prepare for git commits
 
 if exist "%BIN_DIRECTORY%\History.txt" (
 	copy /y "%BIN_DIRECTORY%\History.txt" "%BIN_DIRECTORY%\..\CHANGELOG.md"
+)
+
+if exist "%~dp0\.gitignore" (
+	copy /y "%~dp0\.gitignore" "%BIN_DIRECTORY%\..\.gitignore"
 )
 
 rem Copy documentation

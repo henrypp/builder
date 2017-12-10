@@ -54,9 +54,7 @@
 				$arr = explode (PHP_EOL, $file_header);
 
 				if (count ($arr) >= 2)
-				{
 					$new_array['IDS_AUTHOR'] = trim($arr[1], "\r\n; ");
-				}
 			}
 		}
 
