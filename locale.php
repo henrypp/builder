@@ -44,6 +44,22 @@
 
 		$buffer = sprintf ('[%s]' . PHP_EOL, $locale_name);
 
+		if (!array_key_exists ('IDS_AUTHOR', $new_array))
+		{
+			// init header
+			$file_header = strstr ($new_content, PHP_EOL . PHP_EOL, true);
+
+			if (!empty ($file_header))
+			{
+				$arr = explode (PHP_EOL, $file_header);
+
+				if (count ($arr) >= 2)
+				{
+					$new_array['IDS_AUTHOR'] = trim($arr[1], "\r\n; ");
+				}
+			}
+		}
+
 		foreach ($original_array as $key => $val)
 		{
 			// skip keys marked for deletion
