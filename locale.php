@@ -1,17 +1,25 @@
 <?php
-	$directory = realpath ('.');
-	$example_file = '!example.txt';
-	$full_path = $directory . '/' . $example_file;
-	$main_section = 'i18n';
-
-	if (!file_exists($full_path))
+	if (empty ($argv[1]))
 	{
-		printf ('ERROR: "%s" not found in "%s" directory' . PHP_EOL, $example_file, $directory);
-		return FALSE;
+		printf ('ERROR: Project name is not set!');
+		return false;
+	}
+
+	$eol = "\r\n";
+
+	$project_name = $argv[1];
+	$directory = realpath ('.\\..\\' . $project_name .'\\bin\\i18n');
+	$example_file = $directory . '\\!example.txt';
+	$lng_path = $directory . '\\..\\'. $project_name .'.lng';
+	$lng_header = sprintf ("; Project name: %s" . $eol . "; Last-Modified: %s" . $eol . $eol, $project_name, date ('r', time ()));
+
+	if (!file_exists ($example_file))
+	{
+		printf ('ERROR: "%s" not found in "%s" directory' . $eol, pathinfo ($example_file, PATHINFO_BASENAME), $directory);
+		return false;
 	}
 
 	$cfg_force_default = [
-		'IDS_QUESTION_WARNING'
 	];
 
 	$cfg_force_delete = [
@@ -20,29 +28,30 @@
 	$cfg_force_rename = [
 	];
 
-	$original_content = mb_convert_encoding (file_get_contents ($full_path), 'UTF-8', 'UTF-16LE');
-	$original_array = parse_ini_string ($original_content, FALSE, INI_SCANNER_RAW);
+	$original_content = conv (file_get_contents ($example_file), false);
+	$original_array = parse_ini_string ($original_content, false, INI_SCANNER_RAW);
 
-	$files = glob($directory .'\\*.ini');
+	$ini_array = glob ($directory .'\\*.ini');
 
-	foreach ($files as $file) {
-		$filename = pathinfo ($file, PATHINFO_BASENAME);
+	$hfile = fopen ($lng_path, 'wb');
+	$buffer_total = $lng_header;
 
-		printf ('Processing file "%s"...' . PHP_EOL, $filename);
+	if ($hfile)
+		fwrite ($hfile, $lng_header);
 
-		$new_content = mb_convert_encoding (file_get_contents ($file), 'UTF-8', 'UTF-16LE');
-		$new_array = parse_ini_string ($new_content, FALSE, INI_SCANNER_RAW);
+	foreach ($ini_array as $ini_file)
+	{
+		$locale_name = pathinfo ($ini_file, PATHINFO_FILENAME);
 
-		// init header
-		$new_header = strstr ($new_content, PHP_EOL . PHP_EOL, TRUE);
+		printf ('Processing "%s" locale...' . $eol, $ini_file);
 
-		if (empty ($new_header))
-			$new_header = '; <language name> ' . PHP_EOL . '; <author information>'; // default header
+		$new_content = conv (file_get_contents ($ini_file), false);
+		$new_array = parse_ini_string ($new_content, false, INI_SCANNER_RAW);
 
-		$buffer = sprintf ('%s' . PHP_EOL . PHP_EOL .  '[%s]' . PHP_EOL, $new_header, $main_section);
+		$buffer = sprintf ('[%s]' . $eol, $locale_name);
 
-		foreach ($original_array as $key => $val) {
-
+		foreach ($original_array as $key => $val)
+		{
 			// skip keys marked for deletion
 			if (in_array ($key, $cfg_force_delete))
 				continue;
@@ -52,26 +61,35 @@
 			if (array_key_exists ($key, $cfg_force_rename))
 			{
 				// rename key
-				if(!empty($new_array[$cfg_force_rename[$key]]))
+				if(!empty ($new_array[$cfg_force_rename[$key]]))
 					$text = $new_array[$cfg_force_rename[$key]];
-				else if(!empty($new_array[$key]))
+
+				else if (!empty ($new_array[$key]))
 					$text = $new_array[$key];
 
 				$key = $cfg_force_rename[$key];
 			}
 			else if (!empty ($new_array[$key]))
 			{
-					// reset only predefined keys or "russian" locale ;)
-					if (!in_array ($key, $cfg_force_default) || strcasecmp ($filename, 'russian.ini') == 0)
-						$text = $new_array[$key];
+				// reset only predefined keys or "russian" locale ;)
+				if (!in_array ($key, $cfg_force_default) || strcasecmp ($filename, 'russian') == 0)
+					$text = $new_array[$key];
 			}
 
-			$buffer .= sprintf ('%s=%s' . PHP_EOL, $key, $text);
+			$buffer .= sprintf ('%s=%s' . $eol, $key, $text);
 		}
 
 		unset ($key, $val);
 
-		file_put_contents ($file, mb_convert_encoding ($buffer, 'UTF-16LE', 'UTF-8'));
+		$buffer_total .= $buffer . $eol;
+		file_put_contents ($ini_file, conv ($buffer, true));
 	}
 
+	if ($hfile)
+		fwrite ($hfile, conv ($buffer_total, true));
+
+	if ($hfile)
+		fclose ($hfile);
+
+	function conv ($text, $to_utf16) { return mb_convert_encoding ($text, $to_utf16 ? 'UTF-16LE' : 'UTF-8', $to_utf16 ? 'UTF-8' : 'UTF-16LE'); }
 ?>
