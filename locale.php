@@ -9,7 +9,7 @@
 	$directory = realpath ('.\\..\\' . $project_name .'\\bin\\i18n');
 	$example_file = $directory . '\\!example.txt';
 	$lng_path = $directory . '\\..\\'. $project_name .'.lng';
-	$lng_header = sprintf ('; Localization file for "%s"' . PHP_EOL . '; Last-Modified: %s' . PHP_EOL . PHP_EOL, $project_name, date ('r', time ()));
+	$lng_header = '; ' . $project_name . PHP_EOL . PHP_EOL;
 
 	if (!file_exists ($example_file))
 	{
