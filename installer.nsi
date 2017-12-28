@@ -1,5 +1,8 @@
 ; Archive options
+SetCompress force
 SetCompressor /SOLID lzma
+SetCompressorDictSize 64
+SetDatablockOptimize on
 SetCompress force
 Unicode true
 

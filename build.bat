@@ -79,10 +79,6 @@ copy /y "%BIN_DIRECTORY%\*.reg" "%TMP_DIRECTORY%\32\*.reg"
 copy /y "%BIN_DIRECTORY%\*.bat" "%TMP_DIRECTORY%\64\*.bat"
 copy /y "%BIN_DIRECTORY%\*.reg" "%TMP_DIRECTORY%\64\*.reg"
 
-rem Build localization
-
-php.exe -f %~dp0locale.php %APP_NAME_SHORT%
-
 rem Copy localization
 
 if exist "%BIN_DIRECTORY%\%APP_NAME_SHORT%.lng" (
