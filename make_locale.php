@@ -1,8 +1,6 @@
 <?php
 	if (empty($argv[1]) || empty($argv[2]) || empty($argv[3]) || empty($argv[4]) || empty($argv[5]))
-	{
 		die ('Example usage:' . PHP_EOL . $argv[0] . ' <PROJECT NAME> <PROJECT NAME SHORT> <I18N DIRECTORY> <INPUT RESOURCE.H FILE> <OUTPUT .LNG FILE>' . PHP_EOL);
-	}
 
 	$project_name = $argv[1];
 	$project_name_short = $argv[2];
@@ -12,9 +10,7 @@
 	$lng_file = $argv[5];
 
 	if (!file_exists ($i18n_directory) || !file_exists ($example_file) || !file_exists ($resource_file))
-	{
-		die ('Some files are unavailable!' . PHP_EOL);
-	}
+		die ('ERROR: Some files are unavailable!' . PHP_EOL);
 
 	$lng_header = '; ' . $project_name . PHP_EOL . '; https://github.com/henrypp/' . $project_name_short .'/tree/master/bin/i18n'. PHP_EOL .';'. PHP_EOL . '; DO NOT MODIFY THIS FILE -- YOUR CHANGES WILL BE ERASED!'. PHP_EOL . PHP_EOL;
 
@@ -54,6 +50,9 @@
 	$original_content = conv (file_get_contents ($example_file), false);
 	$original_array = parse_ini_string ($original_content, false, INI_SCANNER_RAW);
 
+	if (empty ($original_array))
+			die ('ERROR: Unable to read file '.  $example_file . PHP_EOL);
+
 	$ini_array = glob ($i18n_directory .'\\*.ini');
 
 	$lng_buffer = $lng_header;
@@ -67,11 +66,17 @@
 		$new_content = conv (file_get_contents ($ini_file), false);
 		$new_array = parse_ini_string ($new_content, false, INI_SCANNER_RAW);
 
+		if (empty ($new_array))
+		{
+			print ('ERROR: Unable to read file '.  $ini_file . PHP_EOL);
+			continue;
+		}
+
 		$buffer = NULL;
 		$ini_header = stristr ($new_content, PHP_EOL . PHP_EOL, true);
 
 		if ($ini_header !== FALSE)
-			$buffer .= $ini_header . PHP_EOL . PHP_EOL;
+			$buffer .= stristr ($ini_header, ';', false) . PHP_EOL . PHP_EOL;
 
 		$buffer .= sprintf ('[%s]' . PHP_EOL, $locale_name);
 		$lng_buffer .= $buffer;
@@ -98,7 +103,7 @@
 			else if (!empty ($new_array[$key]))
 			{
 				// reset only predefined keys or "russian" locale ;)
-				if (!in_array ($key, $cfg_force_default) || strcasecmp ($filename, 'russian') == 0)
+				if (!in_array ($key, $cfg_force_default) || strncasecmp ($filename, 'russian', 7) == 0)
 					$text = $new_array[$key];
 			}
 
@@ -111,18 +116,18 @@
 
 		unset ($key, $val);
 
-		file_put_contents ($ini_file, conv ($buffer, true));
+		file_put_contents ($ini_file, "\xFF\xFE" . conv ($buffer, true));
 		$lng_buffer .= PHP_EOL;
 	}
 
 	$lng_buffer = rtrim ($lng_buffer, PHP_EOL) . PHP_EOL;
 	
-	file_put_contents ($lng_file, conv ($lng_buffer, true));
+	file_put_contents ($lng_file, "\xFF\xFE" . conv ($lng_buffer, true));
 
 	function conv ($text, $to_utf16)
 	{
 		$result = mb_convert_encoding ($text, $to_utf16 ? 'UTF-16LE' : 'UTF-8', $to_utf16 ? 'UTF-8' : 'UTF-16LE');
 
-		return $to_utf16 ? "\xFF\xFE" . $result : $result;
+		return $result;
 	}
 ?>

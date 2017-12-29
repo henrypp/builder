@@ -16,7 +16,6 @@
 	$uint_dialog = 100;
 	$uint_icon = 100;
 	$uint_control = 100;
-	$uint_menu = 1000;
 	$uint_string = 1;
 	$uint_rcdata = 1;
 	$uint_accelerator = 1;
@@ -42,7 +41,7 @@
 				$name = $arr[1];
 				$id = $arr[2];
 
-				if (strncasecmp ($name, 'IDC_', 4) == 0)
+				if (strncasecmp ($name, 'IDC_', 4) == 0 || strncasecmp ($name, 'IDM_', 4) == 0)
 					$id = $uint_control++;
 				
 				else if (strncasecmp ($name, 'IDS_', 4) == 0)
@@ -53,9 +52,6 @@
 
 				else if (strncasecmp ($name, 'IDD_', 4) == 0)
 					$id = $uint_dialog++;
-
-				else if (strncasecmp ($name, 'IDM_', 4) == 0)
-					$id = $uint_menu++;
 
 				else if (strncasecmp ($name, 'IDR_', 4) == 0)
 					$id = $uint_rcdata++;
