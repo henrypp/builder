@@ -26,9 +26,9 @@ Var /GLOBAL ProfilePath
 !define MUI_FINISHPAGE_NOAUTOCLOSE
 !define MUI_COMPONENTSPAGE_NODESC
 
-!define MUI_WELCOMEFINISHPAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Wizard\nsis3-branding.bmp"
+!define MUI_WELCOMEFINISHPAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Wizard\nsis3-metro.bmp"
 !define MUI_HEADERIMAGE
-!define MUI_HEADERIMAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Header\nsis3-branding.bmp"
+!define MUI_HEADERIMAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Header\nsis3-metro.bmp"
 
 !define MUI_FINISHPAGE_RUN
 !define MUI_FINISHPAGE_RUN_FUNCTION RunApplication
@@ -55,7 +55,7 @@ AutoCloseWindow false
 LicenseBkColor /windows
 ManifestSupportedOS all
 ManifestDPIAware true
-SetFont 'Arial' 8
+SetFont 'Segoe UI' 8
 ShowInstDetails show
 ShowUninstDetails nevershow
 SilentUnInstall silent

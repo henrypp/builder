@@ -17,9 +17,6 @@
 	$cfg_force_default = [
 	];
 
-	$cfg_force_delete = [
-	];
-
 	$cfg_force_rename = [
 	];
 
@@ -83,10 +80,6 @@
 
 		foreach ($original_array as $key => $val)
 		{
-			// skip keys marked for deletion
-			if (in_array ($key, $cfg_force_delete))
-				continue;
-
 			$text = $val;
 
 			if (array_key_exists ($key, $cfg_force_rename))
@@ -111,7 +104,10 @@
 				continue;
 
 			$buffer .= sprintf ('%s=%s' . PHP_EOL, $key, $text);
-			$lng_buffer .= sprintf ('%03s=%s' . PHP_EOL, $resource_id_array[$key], $text);
+
+			// write only localized string!
+			if (strcasecmp ($original_array[$key], $text) != 0)
+				$lng_buffer .= sprintf ('%03s=%s' . PHP_EOL, $resource_id_array[$key], $text);
 		}
 
 		unset ($key, $val);
