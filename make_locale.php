@@ -96,7 +96,7 @@
 			else if (!empty ($new_array[$key]))
 			{
 				// reset only predefined keys or "russian" locale ;)
-				if (!in_array ($key, $cfg_force_default) || strncasecmp ($filename, 'russian', 7) == 0)
+				if (!in_array ($key, $cfg_force_default) || strncasecmp ($locale_name, 'russian', 7) == 0)
 					$text = $new_array[$key];
 			}
 
