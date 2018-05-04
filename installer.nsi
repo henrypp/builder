@@ -4,6 +4,7 @@ SetCompressor /SOLID lzma
 SetCompressorDictSize 64
 SetDatablockOptimize on
 SetCompress force
+CRCCheck force
 Unicode true
 
 ; Includes
@@ -91,6 +92,10 @@ RequestExecutionLevel highest
 #################################
 
 Function .onInit
+	${If} ${RunningX64}
+		SetRegView 64
+	${EndIf}
+
 	; Windows Vista and later
 	${If} ${APP_NAME_SHORT} == 'simplewall'
 		${IfNot} ${AtLeastWinVista}
@@ -103,6 +108,10 @@ Function .onInit
 FunctionEnd
 
 Function un.onInit
+	${If} ${RunningX64}
+		SetRegView 64
+	${EndIf}
+
 	${CheckMutex}
 
 	MessageBox MB_YESNO|MB_ICONEXCLAMATION|MB_TOPMOST|MB_DEFBUTTON2 'Are you sure you want to uninstall "${APP_NAME}"?' IDYES +2
@@ -136,20 +145,6 @@ Section "!${APP_NAME}"
 	Call CreateUninstallEntry
 SectionEnd
 
-Section "Create desktop shortcut" SecShortcut1
-	CreateShortCut "$DESKTOP\${APP_NAME}.lnk" "$INSTDIR\${APP_NAME_SHORT}.exe"
-SectionEnd
-
-Section "Create start menu shortcuts" SecShortcut2
-	CreateDirectory "$SMPROGRAMS\${APP_NAME}"
-
-	CreateShortCut "$SMPROGRAMS\${APP_NAME}\${APP_NAME}.lnk" "$INSTDIR\${APP_NAME_SHORT}.exe"
-	CreateShortCut "$SMPROGRAMS\${APP_NAME}\License.lnk" "$INSTDIR\License.txt"
-	CreateShortCut "$SMPROGRAMS\${APP_NAME}\History.lnk" "$INSTDIR\History.txt"
-	CreateShortCut "$SMPROGRAMS\${APP_NAME}\Readme.lnk" "$INSTDIR\Readme.txt"
-	CreateShortCut "$SMPROGRAMS\${APP_NAME}\Uninstall.lnk" "$INSTDIR\uninstall.exe"
-SectionEnd
-
 Section /o "Store settings in application directory (portable mode)" SecPortable
 	IfFileExists "$INSTDIR\${APP_NAME_SHORT}.ini" portable not_portable
 
@@ -160,6 +155,28 @@ Section /o "Store settings in application directory (portable mode)" SecPortable
 	FileClose $0
 
 	portable:
+SectionEnd
+
+Section "Create desktop shortcut" SecShortcut1
+	IfSilent skip
+
+	CreateShortCut "$DESKTOP\${APP_NAME}.lnk" "$INSTDIR\${APP_NAME_SHORT}.exe"
+
+	skip:
+SectionEnd
+
+Section "Create start menu shortcuts" SecShortcut2
+	IfSilent skip
+
+	CreateDirectory "$SMPROGRAMS\${APP_NAME}"
+
+	CreateShortCut "$SMPROGRAMS\${APP_NAME}\${APP_NAME}.lnk" "$INSTDIR\${APP_NAME_SHORT}.exe"
+	CreateShortCut "$SMPROGRAMS\${APP_NAME}\License.lnk" "$INSTDIR\License.txt"
+	CreateShortCut "$SMPROGRAMS\${APP_NAME}\History.lnk" "$INSTDIR\History.txt"
+	CreateShortCut "$SMPROGRAMS\${APP_NAME}\Readme.lnk" "$INSTDIR\Readme.txt"
+	CreateShortCut "$SMPROGRAMS\${APP_NAME}\Uninstall.lnk" "$INSTDIR\uninstall.exe"
+
+	skip:
 SectionEnd
 
 Section "Uninstall"
@@ -202,6 +219,10 @@ Section "Uninstall"
 		Delete "$INSTDIR\rules_system.xml"
 		Delete "$INSTDIR\rules_custom.xml"
 		Delete "$INSTDIR\rules_config.xml"
+
+		Delete "$INSTDIR\apps.xml.bak"
+		Delete "$INSTDIR\rules_custom.xml.bak"
+		Delete "$INSTDIR\rules_config.xml.bak"
 	${EndIf}
 
 	Delete "$INSTDIR\Uninstall.exe"
@@ -218,7 +239,11 @@ Section "Uninstall"
 SectionEnd
 
 Function RunApplication
+	IfSilent skip
+
 	Exec '"$INSTDIR\${APP_NAME_SHORT}.exe"'
+
+	skip:
 FunctionEnd
 
 Function IsPortable
@@ -253,18 +278,20 @@ Function SetPortableMode
 FunctionEnd
 
 Function CreateUninstallEntry
+	IfSilent skip
+
 	; Create uninstall entry only for non-portable mode
-	${IfNot} ${SectionIsSelected} ${SecPortable}
-		WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "DisplayName" "${APP_NAME}"
-		WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "DisplayIcon" '"$INSTDIR\${APP_NAME_SHORT}.exe"'
-		WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "UninstallString" '"$INSTDIR\uninstall.exe"'
-		WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "DisplayVersion" "${APP_VERSION}"
-		WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "InstallLocation" '"$INSTDIR"'
-		WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "Publisher" "${APP_AUTHOR}"
-		WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "HelpLink" "${APP_WEBSITE}"
-		WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "NoModify" 1
-		WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "NoRepair" 1
-	${EndIf}
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "DisplayName" "${APP_NAME}"
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "DisplayIcon" '"$INSTDIR\${APP_NAME_SHORT}.exe"'
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "UninstallString" '"$INSTDIR\uninstall.exe"'
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "DisplayVersion" "${APP_VERSION}"
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "InstallLocation" '"$INSTDIR"'
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "Publisher" "${APP_AUTHOR}"
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "HelpLink" "${APP_WEBSITE}"
+	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "NoModify" 1
+	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "NoRepair" 1
+
+	skip:
 FunctionEnd
 
 ; Version info
