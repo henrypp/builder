@@ -41,6 +41,11 @@ if exist "%~dp0\.gitignore" (
 	copy /y "%~dp0\.gitignore" "%BIN_DIRECTORY%\..\.gitignore"
 )
 
+
+if exist "%~dp0\.gitattributes" (
+	copy /y "%~dp0\.gitattributes" "%BIN_DIRECTORY%\..\.gitattributes"
+)
+
 rem Copy documentation
 
 if exist "%BIN_DIRECTORY%\Readme.txt" (
