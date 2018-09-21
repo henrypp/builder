@@ -154,8 +154,10 @@
 	}
 
 	$lng_buffer = rtrim ($lng_buffer, PHP_EOL) . PHP_EOL;
-	
+
+	chmod ($lng_file, '0755');
 	file_put_contents ($lng_file, "\xFF\xFE" . conv ($lng_buffer, true));
+	chmod ($lng_file, '0600');
 
 	print (PHP_EOL . $timestamp_last . PHP_EOL . PHP_EOL);
 
