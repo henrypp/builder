@@ -89,6 +89,9 @@ rem Copy localization
 if exist "%BIN_DIRECTORY%\%APP_NAME_SHORT%.lng" (
 	copy /y "%BIN_DIRECTORY%\%APP_NAME_SHORT%.lng" "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.lng"
 	copy /y "%BIN_DIRECTORY%\%APP_NAME_SHORT%.lng" "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.lng"
+
+	attrib +R "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.lng"
+	attrib +R "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.lng"
 )
 
 rem Copy plugins
@@ -103,12 +106,12 @@ if exist "%BIN_DIRECTORY%\32\plugins" (
 
 rem Copy binaries
 
-copy /y "%BIN_DIRECTORY%\32\*.exe" "%TMP_DIRECTORY%\32\*.exe"
-copy /y "%BIN_DIRECTORY%\32\*.scr" "%TMP_DIRECTORY%\32\*.scr"
-copy /y "%BIN_DIRECTORY%\32\*.dll" "%TMP_DIRECTORY%\32\*.dll"
-copy /y "%BIN_DIRECTORY%\64\*.exe" "%TMP_DIRECTORY%\64\*.exe"
-copy /y "%BIN_DIRECTORY%\64\*.scr" "%TMP_DIRECTORY%\64\*.scr"
-copy /y "%BIN_DIRECTORY%\64\*.dll" "%TMP_DIRECTORY%\64\*.dll"
+copy /b /y "%BIN_DIRECTORY%\32\*.exe" "%TMP_DIRECTORY%\32\*.exe"
+copy /b /y "%BIN_DIRECTORY%\32\*.scr" "%TMP_DIRECTORY%\32\*.scr"
+copy /b /y "%BIN_DIRECTORY%\32\*.dll" "%TMP_DIRECTORY%\32\*.dll"
+copy /b /y "%BIN_DIRECTORY%\64\*.exe" "%TMP_DIRECTORY%\64\*.exe"
+copy /b /y "%BIN_DIRECTORY%\64\*.scr" "%TMP_DIRECTORY%\64\*.scr"
+copy /b /y "%BIN_DIRECTORY%\64\*.dll" "%TMP_DIRECTORY%\64\*.dll"
 
 rem Sign binaries
 
@@ -122,13 +125,13 @@ if exist "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.exe" (
 
 rem Create portable version
 
-7z.exe a -mm=Deflate64 -mx=9 -mfb=128 -mpass=10 "%PORTABLE_FILE%" "%TMP_DIRECTORY%"
+7z.exe a -mm=Deflate64 -mx=9 -mfb=128 -mpass=10 -stl "%PORTABLE_FILE%" "%TMP_DIRECTORY%"
 
 rem Create setup version
 
 if not %APP_NAME%=="" (
 	copy /y "%TMP_DIRECTORY%\32\*.txt" "%TMP_DIRECTORY%\*.txt"
-	copy /y "%TMP_DIRECTORY%\32\*.lng" "%TMP_DIRECTORY%\*.lng"
+	copy /b /y "%TMP_DIRECTORY%\32\*.lng" "%TMP_DIRECTORY%\*.lng"
 
 	del /s /f /q "%TMP_DIRECTORY%\32\*.txt"
 	del /s /f /q "%TMP_DIRECTORY%\64\*.txt"
@@ -141,7 +144,7 @@ if not %APP_NAME%=="" (
 		copy /y "%BIN_DIRECTORY%\i18n" "%TMP_DIRECTORY%\i18n"
 	)
 
-	copy /y "%BIN_DIRECTORY%\..\src\res\100.ico" "logo.ico"
+	copy /b /y "%BIN_DIRECTORY%\..\src\res\100.ico" "logo.ico"
 	
 	makensis.exe /DAPP_FILES_DIR=%TMP_DIRECTORY% /DAPP_NAME=%APP_NAME% /DAPP_NAME_SHORT=%APP_NAME_SHORT% /DAPP_VERSION=%APP_VERSION% /X"OutFile %SETUP_FILE%" installer.nsi
 	
