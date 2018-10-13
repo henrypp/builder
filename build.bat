@@ -41,9 +41,12 @@ if exist "%~dp0\.gitignore" (
 	copy /y "%~dp0\.gitignore" "%BIN_DIRECTORY%\..\.gitignore"
 )
 
-
 if exist "%~dp0\.gitattributes" (
 	copy /y "%~dp0\.gitattributes" "%BIN_DIRECTORY%\..\.gitattributes"
+)
+
+if exist "%~dp0\.gitmodules" (
+	copy /y "%~dp0\.gitmodules" "%BIN_DIRECTORY%\..\.gitmodules"
 )
 
 rem Copy documentation
