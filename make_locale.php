@@ -141,7 +141,7 @@
 			$buffer .= sprintf ('%s=%s' . PHP_EOL, $key, $text);
 
 			// write only localized string!
-			if (strcasecmp ($val, $text) != 0)
+			if (strcmp ($val, $text) != 0)
 				$lng_buffer .= sprintf ('%03s=%s' . PHP_EOL, $resource_id_array[$key], $text);
 		}
 
