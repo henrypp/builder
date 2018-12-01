@@ -28,6 +28,26 @@
 		return ($GLOBALS['resource_id_array'][$a] < $GLOBALS['resource_id_array'][$b]) ? -1 : 1;
 	}
 
+	function conv ($text, $to_utf16)
+	{
+		return mb_convert_encoding ($text, $to_utf16 ? 'UTF-16LE' : 'UTF-8', $to_utf16 ? 'UTF-8' : 'UTF-16LE');
+	}
+
+	function find_proper_key_name ($numeric_key)
+	{
+		print ($numeric_key);
+
+		foreach ($GLOBALS['resource_id_array'] as $key => $val)
+		{
+			if ($val == $numeric_key)
+				return $key;
+		}
+
+		unset ($key, $val);
+
+		return NULL;
+	}
+
 	// parse resource.h id
 	{
 		$resource_content = file_get_contents ($resource_h_file);
@@ -68,22 +88,24 @@
 			if (empty ($val) || strncasecmp ($val, 'IDS_', 4) != 0)
 				continue;
 
-			$pos = strpos ($val, ' ');
+			$pos = mb_strpos ($val, ' ');
 
 			if ($pos !== FALSE)
 			{
-				$rc_key = substr ($val, 0, $pos);
+				$rc_key = mb_substr ($val, 0, $pos);
 				
 				if (!array_key_exists ($rc_key, $resource_id_array))
 					continue;
 
-				$rc_val = substr ($val, $pos + 1);
+				$rc_val = mb_substr ($val, $pos + 1);
 
 				$rc_val = str_replace ('""', '"', trim ($rc_val, '"'));
 
 				$resource_rc_array[$rc_key] = str_replace ('""', '"', trim ($rc_val, '"'));
 			}
 		}
+
+		unset ($val);
 
 		if (empty ($resource_rc_array))
 			die ('ERROR: Unable to read file '.  $resource_h_file . PHP_EOL);
@@ -96,6 +118,8 @@
 	{
 		$example_content .= sprintf ('%s=%s' . PHP_EOL, $key, $val);
 	}
+
+	unset ($key, $val);
 
 	file_put_contents ($example_file, "\xFF\xFE" . conv ($example_content, true));
 
@@ -122,14 +146,40 @@
 		}
 
 		$buffer = '';
-		$ini_header = stristr ($new_content, PHP_EOL . PHP_EOL, true);
+		$ini_header = mb_stristr ($new_content, PHP_EOL . PHP_EOL, true);
 
 		if ($ini_header !== FALSE)
-			$buffer .= stristr ($ini_header, ';', false) . PHP_EOL . PHP_EOL;
+			$buffer .= mb_stristr ($ini_header, ';', false) . PHP_EOL . PHP_EOL;
 
 		$buffer .= sprintf ('[%s]' . PHP_EOL , $locale_name);
 		$lng_buffer .= $buffer;
 		$lng_buffer .= sprintf ('000=%s' . PHP_EOL, $timestamp);
+
+		// find proper key names
+		{
+			$another_new_array = [];
+
+			foreach ($new_array as $key => $val)
+			{
+				if (ctype_digit ($key))
+				{
+					$new_key = find_proper_key_name ($key);
+
+					if ($new_key)
+					{
+						$another_new_array[$new_key] = $val;
+						continue;
+					}
+				}
+
+				$another_new_array[$key] = $val;
+			}
+
+			if (!empty($another_new_array))
+				$new_array = $another_new_array;
+
+			unset ($key, $val);
+		}
 
 		foreach ($resource_rc_array as $key => $val)
 		{
@@ -155,16 +205,10 @@
 
 	$lng_buffer = rtrim ($lng_buffer, PHP_EOL) . PHP_EOL;
 
+	// write .lng file
 	chmod ($lng_file, '0755');
 	file_put_contents ($lng_file, "\xFF\xFE" . conv ($lng_buffer, true));
 	chmod ($lng_file, '0600');
 
 	print (PHP_EOL . $timestamp_last . PHP_EOL . PHP_EOL);
-
-	function conv ($text, $to_utf16)
-	{
-		$result = mb_convert_encoding ($text, $to_utf16 ? 'UTF-16LE' : 'UTF-8', $to_utf16 ? 'UTF-8' : 'UTF-16LE');
-
-		return $result;
-	}
 ?>
