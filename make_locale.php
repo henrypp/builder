@@ -35,8 +35,6 @@
 
 	function find_proper_key_name ($numeric_key)
 	{
-		print ($numeric_key);
-
 		foreach ($GLOBALS['resource_id_array'] as $key => $val)
 		{
 			if ($val == $numeric_key)
@@ -161,7 +159,7 @@
 
 			foreach ($new_array as $key => $val)
 			{
-				if (ctype_digit ($key))
+				if (is_numeric ($key) || ctype_digit ($key))
 				{
 					$new_key = find_proper_key_name ($key);
 
