@@ -34,41 +34,41 @@ mkdir "%TMP_DIRECTORY%\64"
 rem Prepare for git commits
 
 if exist "%BIN_DIRECTORY%\History.txt" (
-	copy /y "%BIN_DIRECTORY%\History.txt" "%BIN_DIRECTORY%\..\CHANGELOG.md"
+	copy /b /y "%BIN_DIRECTORY%\History.txt" "%BIN_DIRECTORY%\..\CHANGELOG.md"
 )
 
 if exist "%~dp0\.gitignore" (
-	copy /y "%~dp0\.gitignore" "%BIN_DIRECTORY%\..\.gitignore"
+	copy /b /y "%~dp0\.gitignore" "%BIN_DIRECTORY%\..\.gitignore"
 )
 
 if exist "%~dp0\.gitattributes" (
-	copy /y "%~dp0\.gitattributes" "%BIN_DIRECTORY%\..\.gitattributes"
+	copy /b /y "%~dp0\.gitattributes" "%BIN_DIRECTORY%\..\.gitattributes"
 )
 
 if exist "%~dp0\.gitmodules" (
-	copy /y "%~dp0\.gitmodules" "%BIN_DIRECTORY%\..\.gitmodules"
+	copy /b /y "%~dp0\.gitmodules" "%BIN_DIRECTORY%\..\.gitmodules"
 )
 
 rem Copy documentation
 
 if exist "%BIN_DIRECTORY%\Readme.txt" (
-	copy /y "%BIN_DIRECTORY%\Readme.txt" "%TMP_DIRECTORY%\32\Readme.txt"
-	copy /y "%BIN_DIRECTORY%\Readme.txt" "%TMP_DIRECTORY%\64\Readme.txt"
+	copy /b /y "%BIN_DIRECTORY%\Readme.txt" "%TMP_DIRECTORY%\32\Readme.txt"
+	copy /b /y "%BIN_DIRECTORY%\Readme.txt" "%TMP_DIRECTORY%\64\Readme.txt"
 )
 
 if exist "%BIN_DIRECTORY%\History.txt" (
-	copy /y "%BIN_DIRECTORY%\History.txt" "%TMP_DIRECTORY%\32\History.txt"
-	copy /y "%BIN_DIRECTORY%\History.txt" "%TMP_DIRECTORY%\64\History.txt"
+	copy /b /y "%BIN_DIRECTORY%\History.txt" "%TMP_DIRECTORY%\32\History.txt"
+	copy /b /y "%BIN_DIRECTORY%\History.txt" "%TMP_DIRECTORY%\64\History.txt"
 )
 
 if exist "%BIN_DIRECTORY%\License.txt" (
-	copy /y "%BIN_DIRECTORY%\License.txt" "%TMP_DIRECTORY%\32\License.txt"
-	copy /y "%BIN_DIRECTORY%\License.txt" "%TMP_DIRECTORY%\64\License.txt"
+	copy /b /y "%BIN_DIRECTORY%\License.txt" "%TMP_DIRECTORY%\32\License.txt"
+	copy /b /y "%BIN_DIRECTORY%\License.txt" "%TMP_DIRECTORY%\64\License.txt"
 )
 
 if exist "%BIN_DIRECTORY%\FAQ.txt" (
-	copy /y "%BIN_DIRECTORY%\FAQ.txt" "%TMP_DIRECTORY%\32\FAQ.txt"
-	copy /y "%BIN_DIRECTORY%\FAQ.txt" "%TMP_DIRECTORY%\64\FAQ.txt"
+	copy /b /y "%BIN_DIRECTORY%\FAQ.txt" "%TMP_DIRECTORY%\32\FAQ.txt"
+	copy /b /y "%BIN_DIRECTORY%\FAQ.txt" "%TMP_DIRECTORY%\64\FAQ.txt"
 )
 
 copy "%BIN_DIRECTORY%\*.txt" "%TMP_DIRECTORY%\64\*.txt"
@@ -76,27 +76,24 @@ copy "%BIN_DIRECTORY%\*.txt" "%TMP_DIRECTORY%\64\*.txt"
 rem Copy configuration
 
 if exist "%BIN_DIRECTORY%\%APP_NAME_SHORT%.ini" (
-	copy /y "%BIN_DIRECTORY%\%APP_NAME_SHORT%.ini" "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.ini"
-	copy /y "%BIN_DIRECTORY%\%APP_NAME_SHORT%.ini" "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.ini"
+	copy /b /y "%BIN_DIRECTORY%\%APP_NAME_SHORT%.ini" "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.ini"
+	copy /b /y "%BIN_DIRECTORY%\%APP_NAME_SHORT%.ini" "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.ini"
 )
 
 echo|set /p="#PORTABLE#">"%TMP_DIRECTORY%\32\portable.dat"
 echo|set /p="#PORTABLE#">"%TMP_DIRECTORY%\64\portable.dat"
 
-copy /y "%BIN_DIRECTORY%\*.bat" "%TMP_DIRECTORY%\32\*.bat"
-copy /y "%BIN_DIRECTORY%\*.reg" "%TMP_DIRECTORY%\32\*.reg"
+copy /b /y "%BIN_DIRECTORY%\*.bat" "%TMP_DIRECTORY%\32\*.bat"
+copy /b /y "%BIN_DIRECTORY%\*.reg" "%TMP_DIRECTORY%\32\*.reg"
 
-copy /y "%BIN_DIRECTORY%\*.bat" "%TMP_DIRECTORY%\64\*.bat"
-copy /y "%BIN_DIRECTORY%\*.reg" "%TMP_DIRECTORY%\64\*.reg"
+copy /b /y "%BIN_DIRECTORY%\*.bat" "%TMP_DIRECTORY%\64\*.bat"
+copy /b /y "%BIN_DIRECTORY%\*.reg" "%TMP_DIRECTORY%\64\*.reg"
 
 rem Copy localization
 
 if exist "%BIN_DIRECTORY%\%APP_NAME_SHORT%.lng" (
-	copy /y "%BIN_DIRECTORY%\%APP_NAME_SHORT%.lng" "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.lng"
-	copy /y "%BIN_DIRECTORY%\%APP_NAME_SHORT%.lng" "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.lng"
-
-	attrib +R "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.lng"
-	attrib +R "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.lng"
+	copy /b /y "%BIN_DIRECTORY%\%APP_NAME_SHORT%.lng" "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.lng"
+	copy /b /y "%BIN_DIRECTORY%\%APP_NAME_SHORT%.lng" "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.lng"
 )
 
 rem Copy plugins
@@ -105,8 +102,8 @@ if exist "%BIN_DIRECTORY%\32\plugins" (
 	mkdir "%TMP_DIRECTORY%\32\plugins"
 	mkdir "%TMP_DIRECTORY%\64\plugins"
 
-	copy /y "%BIN_DIRECTORY%\32\plugins" "%TMP_DIRECTORY%\32\plugins"
-	copy /y "%BIN_DIRECTORY%\64\plugins" "%TMP_DIRECTORY%\64\plugins"
+	copy /b /y "%BIN_DIRECTORY%\32\plugins" "%TMP_DIRECTORY%\32\plugins"
+	copy /b /y "%BIN_DIRECTORY%\64\plugins" "%TMP_DIRECTORY%\64\plugins"
 )
 
 rem Copy binaries
@@ -128,6 +125,19 @@ if exist "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.exe" (
 	gpg --output "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.sig" --detach-sign "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.scr"
 )
 
+rem Set attributes
+
+attrib -r -s -h "%TMP_DIRECTORY%" /d
+attrib -r -s -h "%TMP_DIRECTORY%\*.*" /s
+
+if exist "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.lng" (
+	attrib +r "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.lng"
+)
+
+if exist "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.lng" (
+	attrib +r "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.lng"
+)
+
 rem Create portable version
 
 7z.exe a -mm=Deflate64 -mx=9 -mfb=128 -mpass=10 -stl "%PORTABLE_FILE%" "%TMP_DIRECTORY%"
@@ -135,7 +145,7 @@ rem Create portable version
 rem Create setup version
 
 if not %APP_NAME%=="" (
-	copy /y "%TMP_DIRECTORY%\32\*.txt" "%TMP_DIRECTORY%\*.txt"
+	copy /b /y "%TMP_DIRECTORY%\32\*.txt" "%TMP_DIRECTORY%\*.txt"
 	copy /b /y "%TMP_DIRECTORY%\32\*.lng" "%TMP_DIRECTORY%\*.lng"
 
 	del /s /f /q "%TMP_DIRECTORY%\32\*.txt"

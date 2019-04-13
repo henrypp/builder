@@ -16,6 +16,7 @@
 	$uint_dialog = 100;
 	$uint_icon = 100;
 	$uint_control = 100;
+	$uint_ptr = 100;
 	$uint_string = 1;
 	$uint_rcdata = 1;
 	$uint_accelerator = 1;
@@ -58,6 +59,9 @@
 
 				else if (strncasecmp ($name, 'IDA_', 4) == 0)
 					$id = $uint_accelerator++;
+
+				else if (strncasecmp ($name, 'IDP_', 4) == 0)
+					$id = $uint_ptr++;
 
 				$resource_buffer .= sprintf ('#define %s %s' . PHP_EOL, $name, $id);
 			}
