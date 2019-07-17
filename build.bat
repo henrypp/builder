@@ -16,7 +16,7 @@ set "TMP_DIRECTORY=%~dp0TEMP\%APP_NAME_SHORT%"
 
 set "PORTABLE_FILE=%OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%-bin.zip"
 set "SETUP_FILE=%OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%-setup.exe"
-set "SETUP_FILE_SIGN=%OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%-setup.sig"
+set "SETUP_FILE_SIGN=%OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%-setup.exe.sig"
 set "CHECKSUM_FILE=%OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%.sha256"
 
 rem Create temporary folder with binaries and documentation...
@@ -47,6 +47,10 @@ if exist "%~dp0\.gitattributes" (
 
 if exist "%~dp0\.gitmodules" (
 	copy /b /y "%~dp0\.gitmodules" "%BIN_DIRECTORY%\..\.gitmodules"
+)
+
+if exist "%~dp0\.editorconfig" (
+	copy /b /y "%~dp0\.editorconfig" "%BIN_DIRECTORY%\..\.editorconfig"
 )
 
 rem Copy documentation
@@ -118,11 +122,11 @@ copy /b /y "%BIN_DIRECTORY%\64\*.dll" "%TMP_DIRECTORY%\64\*.dll"
 rem Sign binaries
 
 if exist "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.exe" (
-	gpg --output "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.sig" --detach-sign "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.exe"
-	gpg --output "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.sig" --detach-sign "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.exe"
+	gpg --output "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.exe.sig" --detach-sign "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.exe"
+	gpg --output "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.exe.sig" --detach-sign "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.exe"
 ) else if exist "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.scr" (
-	gpg --output "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.sig" --detach-sign "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.scr"
-	gpg --output "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.sig" --detach-sign "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.scr"
+	gpg --output "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.scr.sig" --detach-sign "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.scr"
+	gpg --output "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.scr.sig" --detach-sign "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.scr"
 )
 
 rem Set attributes
