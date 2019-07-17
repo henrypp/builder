@@ -28,9 +28,18 @@
 		return ($GLOBALS['resource_id_array'][$a] < $GLOBALS['resource_id_array'][$b]) ? -1 : 1;
 	}
 
-	function conv ($text, $to_utf16)
+	function conv ($text, $to_utf16le)
 	{
-		return mb_convert_encoding ($text, $to_utf16 ? 'UTF-16LE' : 'UTF-8', $to_utf16 ? 'UTF-8' : 'UTF-16LE');
+		$from_enc = '';
+
+		if (mb_check_encoding ($text, 'UTF-8'))
+			$from_enc = 'UTF-8';
+
+		else if (mb_check_encoding ($text, 'UTF-16LE'))
+			$from_enc = 'UTF-16LE';
+
+		if (!empty ($from_enc))
+			return mb_convert_encoding ($text, $to_utf16le ? 'UTF-16LE' : 'UTF-8', $from_enc);
 	}
 
 	function find_proper_key_name ($numeric_key)
