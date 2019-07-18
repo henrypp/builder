@@ -129,10 +129,10 @@ Section "!${APP_NAME}"
 
 	${If} ${RunningX64}
 		File "${APP_FILES_DIR}\64\${APP_NAME_SHORT}.exe"
-		File /nonfatal "${APP_FILES_DIR}\64\${APP_NAME_SHORT}.sig"
+		File /nonfatal "${APP_FILES_DIR}\64\${APP_NAME_SHORT}.exe.sig"
 	${Else}
 		File "${APP_FILES_DIR}\32\${APP_NAME_SHORT}.exe"
-		File /nonfatal "${APP_FILES_DIR}\32\${APP_NAME_SHORT}.sig"
+		File /nonfatal "${APP_FILES_DIR}\32\${APP_NAME_SHORT}.exe.sig"
 	${EndIf}
 
 	File /nonfatal "${APP_FILES_DIR}\${APP_NAME_SHORT}.lng"
@@ -204,6 +204,7 @@ Section "Uninstall"
 
 	; Remove install directory
 	Delete "$INSTDIR\${APP_NAME_SHORT}.exe"
+	Delete "$INSTDIR\${APP_NAME_SHORT}.exe.sig"
 	Delete "$INSTDIR\${APP_NAME_SHORT}.sig"
 	Delete "$INSTDIR\${APP_NAME_SHORT}.lng"
 	Delete "$INSTDIR\${APP_NAME_SHORT}.ini"
@@ -219,10 +220,13 @@ Section "Uninstall"
 		Delete "$INSTDIR\rules_system.xml"
 		Delete "$INSTDIR\rules_custom.xml"
 		Delete "$INSTDIR\rules_config.xml"
+		Delete "$INSTDIR\profile.xml"
+		Delete "$INSTDIR\profile_internal.xml"
 
 		Delete "$INSTDIR\apps.xml.bak"
 		Delete "$INSTDIR\rules_custom.xml.bak"
 		Delete "$INSTDIR\rules_config.xml.bak"
+		Delete "$INSTDIR\profile.xml.bak"
 	${EndIf}
 
 	Delete "$INSTDIR\Uninstall.exe"
