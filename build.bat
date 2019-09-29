@@ -144,7 +144,7 @@ if exist "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.lng" (
 
 rem Create portable version
 
-7z.exe a -mm=Deflate64 -mx=9 -mfb=128 -mpass=10 -stl "%PORTABLE_FILE%" "%TMP_DIRECTORY%"
+7z.exe a -mm=Deflate64 -mx=9 -mfb=257 -mpass=10 -mtc=off -slp "%PORTABLE_FILE%" "%TMP_DIRECTORY%"
 
 rem Create setup version
 
