@@ -96,10 +96,10 @@ Function .onInit
 		SetRegView 64
 	${EndIf}
 
-	; Windows Vista and later
+	; Windows 7 and later
 	${If} ${APP_NAME_SHORT} == 'simplewall'
-		${IfNot} ${AtLeastWinVista}
-			MessageBox MB_OK|MB_ICONEXCLAMATION|MB_TOPMOST '"${APP_NAME}" requires Windows Vista or later.'
+		${IfNot} ${AtLeastWin7}
+			MessageBox MB_OK|MB_ICONEXCLAMATION|MB_TOPMOST '"${APP_NAME}" requires Windows 7 or later.'
 			Abort
 		${EndIf}
 	${EndIf}
@@ -202,12 +202,18 @@ Section "Uninstall"
 	; Remove localizations
 	RMDir /r "$INSTDIR\i18n"
 
+	; Remove plugins (if exists)
+	RMDir /r "$INSTDIR\plugins"
+
 	; Remove install directory
+	Delete "$INSTDIR\${APP_NAME_SHORT}.scr"
+	Delete "$INSTDIR\${APP_NAME_SHORT}.scr.sig"
 	Delete "$INSTDIR\${APP_NAME_SHORT}.exe"
 	Delete "$INSTDIR\${APP_NAME_SHORT}.exe.sig"
 	Delete "$INSTDIR\${APP_NAME_SHORT}.sig"
 	Delete "$INSTDIR\${APP_NAME_SHORT}.lng"
 	Delete "$INSTDIR\${APP_NAME_SHORT}.ini"
+	Delete "$INSTDIR\${APP_NAME_SHORT}_debug.log"
 	Delete "$INSTDIR\portable.dat"
 	Delete "$INSTDIR\Readme.txt"
 	Delete "$INSTDIR\History.txt"
@@ -237,6 +243,8 @@ Section "Uninstall"
 
 	; Clean registry
 	DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "${APP_NAME}"
+	DeleteRegValue HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "${APP_NAME}"
+
 	DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}"
 
 	RMDir "$INSTDIR"
