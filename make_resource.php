@@ -33,11 +33,19 @@
 
 	foreach ($resource_explode as $val)
 	{
-		if (strncasecmp ($val, '#define ', 7) == 0)
+		if (strncasecmp ($val, '#define ', 8) != 0)
+		{
+			$resource_buffer .= $val . PHP_EOL;
+		}
+		else
 		{
 			$arr = explode (' ', $val);
 
-			if (!empty ($arr[1]) && !empty ($arr[2]) && is_numeric ($arr[2]))
+			if (empty ($arr[1]) || empty ($arr[2]) || !is_numeric ($arr[2]))
+			{
+				$resource_buffer .= $val . PHP_EOL;
+			}
+			else
 			{
 				$name = $arr[1];
 				$id = $arr[2];
@@ -65,14 +73,6 @@
 
 				$resource_buffer .= sprintf ('#define %s %s' . PHP_EOL, $name, $id);
 			}
-			else
-			{
-				$resource_buffer .= $val . PHP_EOL;
-			}
-		}
-		else
-		{
-			$resource_buffer .= $val . PHP_EOL;
 		}
 	}
 
