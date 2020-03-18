@@ -75,6 +75,7 @@ if exist "%BIN_DIRECTORY%\FAQ.txt" (
 	copy /b /y "%BIN_DIRECTORY%\FAQ.txt" "%TMP_DIRECTORY%\64\FAQ.txt"
 )
 
+copy "%BIN_DIRECTORY%\*.txt" "%TMP_DIRECTORY%\32\*.txt"
 copy "%BIN_DIRECTORY%\*.txt" "%TMP_DIRECTORY%\64\*.txt"
 
 rem Copy configuration
