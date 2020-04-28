@@ -52,7 +52,7 @@
 
 				if (strncasecmp ($name, 'IDC_', 4) == 0 || strncasecmp ($name, 'IDM_', 4) == 0)
 					$id = $uint_control++;
-				
+
 				else if (strncasecmp ($name, 'IDS_', 4) == 0)
 					$id = $uint_string++;
 
