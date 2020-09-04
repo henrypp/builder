@@ -185,6 +185,9 @@ Section "Uninstall"
 	${EndIf}
 
 	; Remove "skipuac" entry
+	nsExec::Exec 'schtasks /delete /f /tn "${APP_NAME_SHORT}Task"'
+
+	; Remove "skipuac" entry (deprecated)
 	nsExec::Exec 'schtasks /delete /f /tn "${APP_NAME_SHORT}SkipUac"'
 
 	; Remove configuration from %appdata% only for non-portable mode
