@@ -37,6 +37,11 @@ if exist "%BIN_DIRECTORY%\History.txt" (
 	copy /b /y "%BIN_DIRECTORY%\History.txt" "%BIN_DIRECTORY%\..\CHANGELOG.md"
 )
 
+if exist "%~dp0\.github\FUNDING.yml" (
+	mkdir "%BIN_DIRECTORY%\..\.github"
+	copy /b /y "%~dp0\.github\FUNDING.yml" "%BIN_DIRECTORY%\..\.github\FUNDING.yml"
+)
+
 if exist "%~dp0\.gitignore" (
 	copy /b /y "%~dp0\.gitignore" "%BIN_DIRECTORY%\..\.gitignore"
 )
