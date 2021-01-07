@@ -20,41 +20,6 @@
 
 	$lng_buffer = '; ' . $project_name . PHP_EOL . '; https://github.com/henrypp/' . $project_name_short .'/tree/master/bin/i18n'. PHP_EOL .';'. PHP_EOL . '; DO NOT MODIFY THIS FILE -- YOUR CHANGES WILL BE ERASED!'. PHP_EOL . PHP_EOL;
 
-	function sort_resource ($a, $b)
-	{
-		if ($GLOBALS['resource_id_array'][$a] == $GLOBALS['resource_id_array'][$b])
-			return 0;
-
-		return ($GLOBALS['resource_id_array'][$a] < $GLOBALS['resource_id_array'][$b]) ? -1 : 1;
-	}
-
-	function conv ($text, $to_utf16le)
-	{
-		$from_enc = '';
-
-		if (mb_check_encoding ($text, 'UTF-8'))
-			$from_enc = 'UTF-8';
-
-		else if (mb_check_encoding ($text, 'UTF-16LE'))
-			$from_enc = 'UTF-16LE';
-
-		if (!empty ($from_enc))
-			return mb_convert_encoding ($text, $to_utf16le ? 'UTF-16LE' : 'UTF-8', $from_enc);
-	}
-
-	function find_proper_key_name ($numeric_key)
-	{
-		foreach ($GLOBALS['resource_id_array'] as $key => $val)
-		{
-			if ($val == $numeric_key)
-				return $key;
-		}
-
-		unset ($key, $val);
-
-		return NULL;
-	}
-
 	// parse resource.h id
 	{
 		$resource_content = file_get_contents ($resource_h_file);
@@ -128,23 +93,29 @@
 
 	unset ($key, $val);
 
-	file_put_contents ($example_file, "\xFF\xFE" . conv ($example_content, true));
+	file_put_contents ($example_file, "\xFF\xFE" . conv ($example_content, TRUE));
 
 	// process every *.ini file
 	$ini_array = glob ($i18n_directory .'\\*.ini');
+
+	// calculate highest .ini file modified time
+	foreach ($ini_array as $ini_file)
+	{
+		$timestamp = filemtime ($ini_file);
+
+		if ($timestamp > $timestamp_last)
+			$timestamp_last = $timestamp;
+	}
 
 	foreach ($ini_array as $ini_file)
 	{
 		$timestamp = filemtime ($ini_file);
 		$locale_name = pathinfo ($ini_file, PATHINFO_FILENAME);
 
-		if ($timestamp > $timestamp_last)
-			$timestamp_last = $timestamp;
-
 		printf ('Processing "%s" locale...' . PHP_EOL, $ini_file);
 
-		$new_content = conv (file_get_contents ($ini_file), false);
-		$new_array = parse_ini_string ($new_content, false, INI_SCANNER_RAW);
+		$new_content = conv (file_get_contents ($ini_file), FALSE);
+		$new_array = parse_ini_string ($new_content, FALSE, INI_SCANNER_RAW);
 
 		if (empty ($new_array))
 		{
@@ -153,14 +124,22 @@
 		}
 
 		$buffer = '';
-		$ini_header = mb_stristr ($new_content, PHP_EOL . PHP_EOL, true);
+		$ini_header = mb_stristr ($new_content, PHP_EOL . PHP_EOL, TRUE);
 
 		if ($ini_header !== FALSE)
-			$buffer .= mb_stristr ($ini_header, ';', false) . PHP_EOL . PHP_EOL;
+			$buffer .= mb_stristr ($ini_header, ';', FALSE) . PHP_EOL . PHP_EOL;
 
 		$buffer .= sprintf ('[%s]' . PHP_EOL , $locale_name);
 		$lng_buffer .= $buffer;
-		$lng_buffer .= sprintf ('000=%s' . PHP_EOL, $timestamp);
+
+		if(strcasecmp ($locale_name, 'Russian') == 0)
+		{
+			$lng_buffer .= sprintf ('000=%s' . PHP_EOL, $timestamp_last);
+		}
+		// else
+		// {
+			// $lng_buffer .= sprintf ('000=%s' . PHP_EOL, $timestamp);
+		// }
 
 		// find proper key names
 		{
@@ -204,7 +183,7 @@
 
 		unset ($key, $val);
 
-		file_put_contents ($ini_file, "\xFF\xFE" . conv ($buffer, true));
+		file_put_contents ($ini_file, "\xFF\xFE" . conv ($buffer, TRUE));
 		touch ($ini_file, $timestamp, $timestamp);
 
 		$lng_buffer .= PHP_EOL;
@@ -214,8 +193,43 @@
 
 	// write .lng file
 	chmod ($lng_file, '0755');
-	file_put_contents ($lng_file, "\xFF\xFE" . conv ($lng_buffer, true));
+	file_put_contents ($lng_file, "\xFF\xFE" . conv ($lng_buffer, TRUE));
 	chmod ($lng_file, '0600');
 
 	print (PHP_EOL . $timestamp_last . PHP_EOL . PHP_EOL);
+
+	function sort_resource ($a, $b)
+	{
+		if ($GLOBALS['resource_id_array'][$a] == $GLOBALS['resource_id_array'][$b])
+			return 0;
+
+		return ($GLOBALS['resource_id_array'][$a] < $GLOBALS['resource_id_array'][$b]) ? -1 : 1;
+	}
+
+	function conv ($text, $to_utf16le)
+	{
+		$from_enc = '';
+
+		if (mb_check_encoding ($text, 'UTF-8'))
+			$from_enc = 'UTF-8';
+
+		else if (mb_check_encoding ($text, 'UTF-16LE'))
+			$from_enc = 'UTF-16LE';
+
+		if (!empty ($from_enc))
+			return mb_convert_encoding ($text, $to_utf16le ? 'UTF-16LE' : 'UTF-8', $from_enc);
+	}
+
+	function find_proper_key_name ($numeric_key)
+	{
+		foreach ($GLOBALS['resource_id_array'] as $key => $val)
+		{
+			if ($val == $numeric_key)
+				return $key;
+		}
+
+		unset ($key, $val);
+
+		return NULL;
+	}
 ?>
