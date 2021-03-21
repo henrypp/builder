@@ -15,6 +15,7 @@ set "OUT_DIRECTORY=%UserProfile%\Desktop"
 set "TMP_DIRECTORY=%~dp0TEMP\%APP_NAME_SHORT%"
 
 set "PORTABLE_FILE=%OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%-bin.zip"
+set "PDB_PACKAGE_FILE=%OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%-pdb.zip"
 set "SETUP_FILE=%OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%-setup.exe"
 set "SETUP_FILE_SIGN=%OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%-setup.exe.sig"
 set "CHECKSUM_FILE=%OUT_DIRECTORY%\%APP_NAME_SHORT%-%APP_VERSION%.sha256"
@@ -24,12 +25,34 @@ rem Create temporary folder with binaries and documentation...
 del /s /f /q "%TMP_DIRECTORY%\*"
 
 del /s /f /q "%PORTABLE_FILE%"
+del /s /f /q "%PDB_PACKAGE_FILE%"
 del /s /f /q "%SETUP_FILE%"
 del /s /f /q "%SETUP_FILE_SIGN%"
 del /s /f /q "%CHECKSUM_FILE%"
 
 mkdir "%TMP_DIRECTORY%\32"
 mkdir "%TMP_DIRECTORY%\64"
+
+rem Made debug symbols package
+
+if exist "%BIN_DIRECTORY%\32\%APP_NAME_SHORT%.pdb" (
+	copy /b /y "%BIN_DIRECTORY%\32\%APP_NAME_SHORT%.pdb" "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.pdb"
+)
+
+if exist "%BIN_DIRECTORY%\64\%APP_NAME_SHORT%.pdb" (
+	copy /b /y "%BIN_DIRECTORY%\64\%APP_NAME_SHORT%.pdb" "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.pdb"
+)
+
+if exist "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.pdb" if exist %TMP_DIRECTORY%\64\%APP_NAME_SHORT%.pdb (
+	7z.exe a -mm=Deflate64 -mx=9 -mfb=257 -mpass=15 -mtc=off -slp "%PDB_PACKAGE_FILE%" "%TMP_DIRECTORY%"
+
+	del /s /f /q "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.pdb"
+	del /s /f /q "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.pdb"
+)
+
+if exist "%BIN_DIRECTORY%\History.txt" (
+	copy /b /y "%BIN_DIRECTORY%\History.txt" "%BIN_DIRECTORY%\..\CHANGELOG.md"
+)
 
 rem Prepare for git commits
 
@@ -110,9 +133,13 @@ rem Copy plugins
 
 if exist "%BIN_DIRECTORY%\32\plugins" (
 	mkdir "%TMP_DIRECTORY%\32\plugins"
-	mkdir "%TMP_DIRECTORY%\64\plugins"
 
 	copy /b /y "%BIN_DIRECTORY%\32\plugins" "%TMP_DIRECTORY%\32\plugins"
+)
+
+if exist "%BIN_DIRECTORY%\64\plugins" (
+	mkdir "%TMP_DIRECTORY%\64\plugins"
+
 	copy /b /y "%BIN_DIRECTORY%\64\plugins" "%TMP_DIRECTORY%\64\plugins"
 )
 
@@ -130,7 +157,9 @@ rem Sign binaries
 if exist "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.exe" (
 	gpg --output "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.exe.sig" --detach-sign "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.exe"
 	gpg --output "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.exe.sig" --detach-sign "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.exe"
-) else if exist "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.scr" (
+)
+
+if exist "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.scr" (
 	gpg --output "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.scr.sig" --detach-sign "%TMP_DIRECTORY%\32\%APP_NAME_SHORT%.scr"
 	gpg --output "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.scr.sig" --detach-sign "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.scr"
 )
@@ -150,7 +179,7 @@ if exist "%TMP_DIRECTORY%\64\%APP_NAME_SHORT%.lng" (
 
 rem Create portable version
 
-7z.exe a -mm=Deflate64 -mx=9 -mfb=257 -mpass=10 -mtc=off -slp "%PORTABLE_FILE%" "%TMP_DIRECTORY%"
+7z.exe a -mm=Deflate64 -mx=9 -mfb=257 -mpass=15 -mtc=off -slp "%PORTABLE_FILE%" "%TMP_DIRECTORY%"
 
 rem Create setup version
 
@@ -181,6 +210,10 @@ rem Calculate sha256 checksum
 
 if exist "%PORTABLE_FILE%" (
 	sha256deep64 -s -b -k "%PORTABLE_FILE%">>"%CHECKSUM_FILE%"
+)
+
+if exist "%PDB_PACKAGE_FILE%" (
+	sha256deep64 -s -b -k "%PDB_PACKAGE_FILE%">>"%CHECKSUM_FILE%"
 )
 
 if exist "%SETUP_FILE%" (
