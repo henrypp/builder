@@ -132,7 +132,7 @@
 		$buffer .= sprintf ('[%s]' . PHP_EOL , $locale_name);
 		$lng_buffer .= $buffer;
 
-		if(strcasecmp ($locale_name, 'Russian') == 0)
+		if (strcasecmp ($locale_name, 'Russian') == 0)
 		{
 			$lng_buffer .= sprintf ('000=%s' . PHP_EOL, $timestamp_last);
 		}
