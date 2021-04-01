@@ -55,12 +55,13 @@ AllowSkipFiles off
 AutoCloseWindow false
 LicenseBkColor /windows
 ManifestSupportedOS all
+ManifestLongPathAware true
 ManifestDPIAware true
 SetFont 'Segoe UI' 8
 ShowInstDetails show
 ShowUninstDetails nevershow
 SilentUnInstall silent
-XPStyle on
+;XPStyle on
 
 Name "${APP_NAME}"
 BrandingText "${COPYRIGHT}"
@@ -77,20 +78,6 @@ InstallDirRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP
 ;OutFile "${APP_NAME_SHORT}_${APP_VERSION}_setup.exe"
 RequestExecutionLevel highest
 
-#################################
-!macro CheckMutex
-	retry:
-	System::Call 'kernel32::OpenMutex(i 0x100000, b 0, t "${APP_NAME_SHORT}") i .R0'
-	IntCmp $R0 0 ignore
-		System::Call 'kernel32::CloseHandle(i $R0)'
-		MessageBox MB_ABORTRETRYIGNORE|MB_ICONEXCLAMATION|MB_TOPMOST '"${APP_NAME}" is running. Please close it before continue.' IDRETRY retry IDIGNORE ignore
-		Abort
-	ignore:
-!macroend
-
-!define CheckMutex "${CallArtificialFunction} CheckMutex"
-#################################
-
 Function .onInit
 	${If} ${RunningX64}
 		SetRegView 64
@@ -103,16 +90,12 @@ Function .onInit
 			Abort
 		${EndIf}
 	${EndIf}
-
-	${CheckMutex}
 FunctionEnd
 
 Function un.onInit
 	${If} ${RunningX64}
 		SetRegView 64
 	${EndIf}
-
-	${CheckMutex}
 
 	MessageBox MB_YESNO|MB_ICONEXCLAMATION|MB_TOPMOST|MB_DEFBUTTON2 'Are you sure you want to uninstall "${APP_NAME}"?' IDYES +2
 	Abort
