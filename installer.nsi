@@ -61,7 +61,7 @@ SetFont 'Segoe UI' 8
 ShowInstDetails show
 ShowUninstDetails nevershow
 SilentUnInstall silent
-;XPStyle on
+XPStyle on
 
 Name "${APP_NAME}"
 BrandingText "${COPYRIGHT}"
