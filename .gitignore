@@ -5,6 +5,7 @@ bin/32/
 bin/64/
 x64/
 win32/
+__pycache__
 
 thumbs.db
 ehthumbs.db
