@@ -20,8 +20,8 @@ Var /GLOBAL ProfilePath
 !define APP_WEBSITE_HOST "www.henrypp.org"
 !define APP_WEBSITE "https://${APP_WEBSITE_HOST}"
 
-!define COPYRIGHT "(c) ${APP_AUTHOR}. All rights reserved."
-!define LICENSE_FILE "${APP_FILES_DIR}\License.txt"
+!define COPYRIGHT "(c) ${APP_AUTHOR}. All rights reversed."
+!define LICENSE_FILE "${APP_FILES_DIR}\64\License.txt"
 
 ;!define MUI_ABORTWARNING
 !define MUI_FINISHPAGE_NOAUTOCLOSE
@@ -118,10 +118,10 @@ Section "!${APP_NAME}"
 		File /nonfatal "${APP_FILES_DIR}\32\${APP_NAME_SHORT}.exe.sig"
 	${EndIf}
 
-	File /nonfatal "${APP_FILES_DIR}\${APP_NAME_SHORT}.lng"
-	File "${APP_FILES_DIR}\History.txt"
-	File "${APP_FILES_DIR}\License.txt"
-	File "${APP_FILES_DIR}\Readme.txt"
+	File /nonfatal "${APP_FILES_DIR}\64\${APP_NAME_SHORT}.lng"
+	File "${APP_FILES_DIR}\64\History.txt"
+	File "${APP_FILES_DIR}\64\License.txt"
+	File "${APP_FILES_DIR}\64\Readme.txt"
 
 	WriteUninstaller $INSTDIR\uninstall.exe
 
