@@ -23,6 +23,11 @@ def print_clr (text, is_error=False):
 		print (f"{bcolors.OKGREEN}" + text + f"{bcolors.ENDC}")
 
 def copy_file (src, dst):
+	dst_dir = os.path.dirname (os.path.abspath (dst))
+
+	if not os.path.isdir (dst_dir):
+		os.makedirs (dst_dir, exist_ok=True)
+
 	shutil.copyfile (src, dst)
 
 def remove_file (src):
@@ -30,9 +35,9 @@ def remove_file (src):
 		os.remove (src)
 
 def sign_file (src):
-	dst = src + ".sig"
+	dst = src + '.sig'
 	remove_file (dst)
-	os.system ("gpg --output \"" + dst + "\" --detach-sign \"" + src + "\"")
+	os.system ('gpg --output "' + dst + '" --detach-sign "' + src + '"')
 
 def copy_files (mask, dst):
 	for fn in glob.glob (mask):
@@ -51,14 +56,14 @@ def remove_files (mask):
 		remove_file (fn)
 
 def pack_dir (out_file,  directory):
-	os.system ("7z.exe a -mm=Deflate64 -mx=9 -mfb=257 -mpass=15 -mmt=on -mtc=off -slp -bb1 \"" + out_file + "\" \"" + directory + "\"")
+	os.system ('7z.exe a -mm=Deflate64 -mx=9 -mfb=257 -mpass=15 -mmt=on -mtc=off -slp -bb1 "' + out_file + '" "' + directory + '"')
 
 def calculate_hash (src):
-	with open (src, "rb") as fn:
+	with open (src, 'rb') as fn:
 		bytes = fn.read ()
 		fn.close ()
 
-		return hashlib.sha256 (bytes).hexdigest () + " *" + os.path.basename (src) + "\r\n"
+		return hashlib.sha256 (bytes).hexdigest () + ' *' + os.path.basename (src) + '\n'
 
 # Colored terminal fix
 os.system ('')
@@ -79,7 +84,7 @@ CURRENT_DIRECTORY = os.path.dirname (os.path.abspath (__file__))
 PROJECT_DIRECTORY = os.path.join (CURRENT_DIRECTORY, '..', APP_NAME_SHORT)
 BIN_DIRECTORY = os.path.join (PROJECT_DIRECTORY, 'bin')
 OUT_DIRECTORY = os.path.join (os.path.join (os.environ['USERPROFILE']), 'Desktop')
-TMP_DIRECTORY = os.path.join (os.environ['TEMP'], APP_NAME_SHORT + '-temp')
+TMP_DIRECTORY = os.path.join (os.environ['TEMP'], 'builder', APP_NAME_SHORT)
 
 PORTABLE_FILE = os.path.join (OUT_DIRECTORY, APP_NAME_SHORT + '-' + APP_VERSION + '-bin.zip')
 PDB_PACKAGE_FILE = os.path.join (OUT_DIRECTORY, APP_NAME_SHORT + '-' + APP_VERSION + '-pdb.zip')
@@ -88,11 +93,11 @@ CHECKSUM_FILE = os.path.join (OUT_DIRECTORY, APP_NAME_SHORT + '-' + APP_VERSION 
 
 # Check configuration is right
 if not os.path.isdir (PROJECT_DIRECTORY):
-	print_clr ('Project directory '' + PROJECT_DIRECTORY + '' was not found.',  True)
+	print_clr ('Project directory ' + PROJECT_DIRECTORY + ' was not found.',  True)
 	os.sys.exit ()
 
 if not os.path.isdir (BIN_DIRECTORY):
-	print_clr ('Binaries directory '' + PROJECT_DIRECTORY + '' was not found.',  True)
+	print_clr ('Binaries directory ' + PROJECT_DIRECTORY + ' was not found.',  True)
 	os.sys.exit ()
 
 # Remove previous packages
@@ -124,22 +129,9 @@ if os.path.isfile (os.path.join (CURRENT_DIRECTORY, '.gitmodules')) and not os.p
 if os.path.isfile (os.path.join (BIN_DIRECTORY, 'History.txt')):
 	copy_file (os.path.join (BIN_DIRECTORY, 'History.txt'), os.path.join (PROJECT_DIRECTORY, 'CHANGELOG.md'))
 
-# Prepare temporary directory
-os.makedirs (os.path.join (TMP_DIRECTORY, '32'), exist_ok=True)
-os.makedirs (os.path.join (TMP_DIRECTORY, '64'), exist_ok=True)
-
-print_clr ('Create debug symbols package...')
-
-if os.path.isfile (os.path.join (BIN_DIRECTORY, '32', APP_NAME_SHORT + '.pdb')):
-	copy_file (os.path.join (BIN_DIRECTORY, '32', APP_NAME_SHORT + '.pdb'), os.path.join (TMP_DIRECTORY, '32', APP_NAME_SHORT + '.pdb'))
-
-if os.path.isfile (os.path.join (BIN_DIRECTORY, '64', APP_NAME_SHORT + '.pdb')):
-	copy_file (os.path.join (BIN_DIRECTORY, '64', APP_NAME_SHORT + '.pdb'), os.path.join (TMP_DIRECTORY, '64', APP_NAME_SHORT + '.pdb'))
-
-pack_dir (PDB_PACKAGE_FILE, TMP_DIRECTORY)
-
-remove_file (os.path.join (TMP_DIRECTORY, '32', APP_NAME_SHORT + '.pdb'))
-remove_file (os.path.join (TMP_DIRECTORY, '64', APP_NAME_SHORT + '.pdb'))
+# Cleanup
+if os.path.isdir (TMP_DIRECTORY):
+	shutil.rmtree (TMP_DIRECTORY)
 
 print_clr ('Copy documentation...')
 
@@ -191,6 +183,19 @@ copy_files (os.path.join (BIN_DIRECTORY, '64', '*.exe'), os.path.join (TMP_DIREC
 copy_files (os.path.join (BIN_DIRECTORY, '64', '*.scr'), os.path.join (TMP_DIRECTORY, '64'));
 copy_files (os.path.join (BIN_DIRECTORY, '64', '*.dll'), os.path.join (TMP_DIRECTORY, '64'));
 
+binary_hash_32 = ''
+binary_hash_64 = ''
+
+if os.path.isfile (os.path.join (BIN_DIRECTORY, '32', APP_NAME_SHORT + '.exe')):
+	binary_hash_32 = calculate_hash (os.path.join (TMP_DIRECTORY, '32', APP_NAME_SHORT + '.exe'))
+elif os.path.isfile (os.path.join (BIN_DIRECTORY, '32', APP_NAME_SHORT + '.scr')):
+	binary_hash_32 = calculate_hash (os.path.join (TMP_DIRECTORY, '32', APP_NAME_SHORT + '.scr'))
+
+if os.path.isfile (os.path.join (BIN_DIRECTORY, '64', APP_NAME_SHORT + '.exe')):
+	binary_hash_64 = calculate_hash (os.path.join (TMP_DIRECTORY, '64', APP_NAME_SHORT + '.exe'))
+elif os.path.isfile (os.path.join (BIN_DIRECTORY, '64', APP_NAME_SHORT + '.scr')):
+	binary_hash_64 = calculate_hash (os.path.join (TMP_DIRECTORY, '64', APP_NAME_SHORT + '.scr'))
+
 print_clr ('Signing binaries with gpg...')
 
 sign_files (os.path.join (TMP_DIRECTORY, '32', '*.exe'))
@@ -211,40 +216,46 @@ if APP_NAME != '':
 	# Copy installer icon
 	copy_file (os.path.join (PROJECT_DIRECTORY, "src", "res", "100.ico"), os.path.join (CURRENT_DIRECTORY, "logo.ico"))
 
-	os.system ('makensis.exe /DAPP_FILES_DIR=' + TMP_DIRECTORY + ' /DAPP_NAME="' + APP_NAME + '" /DAPP_NAME_SHORT="' + APP_NAME_SHORT + '" /DAPP_VERSION=' + APP_VERSION + ' /X"OutFile ' + SETUP_FILE +'" setup.nsi')
+	os.system ('makensis.exe /DAPP_FILES_DIR="' + TMP_DIRECTORY + '" /DAPP_NAME="' + APP_NAME + '" /DAPP_NAME_SHORT="' + APP_NAME_SHORT + '" /DAPP_VERSION="' + APP_VERSION + '" /X"OutFile ' + SETUP_FILE +'" setup.nsi')
 
 	sign_file (SETUP_FILE)
 
 	remove_file (os.path.join (CURRENT_DIRECTORY, 'logo.ico'))
 
+print_clr ('Create debug symbols package...')
+
+shutil.rmtree (TMP_DIRECTORY)
+
+if os.path.isfile (os.path.join (BIN_DIRECTORY, '32', APP_NAME_SHORT + '.pdb')):
+	copy_file (os.path.join (BIN_DIRECTORY, '32', APP_NAME_SHORT + '.pdb'), os.path.join (TMP_DIRECTORY, '32', APP_NAME_SHORT + '.pdb'))
+else:
+	print_clr ('Program database "' + os.path.join ('32', APP_NAME_SHORT + '.pdb') + '" was not found...')
+
+if os.path.isfile (os.path.join (BIN_DIRECTORY, '64', APP_NAME_SHORT + '.pdb')):
+	copy_file (os.path.join (BIN_DIRECTORY, '64', APP_NAME_SHORT + '.pdb'), os.path.join (TMP_DIRECTORY, '64', APP_NAME_SHORT + '.pdb'))
+else:
+	print_clr ('Program database "' + os.path.join ('64', APP_NAME_SHORT + '.pdb') + '" was not found...')
+
+pack_dir (PDB_PACKAGE_FILE, TMP_DIRECTORY)
+
 print_clr ('Calculate sha256 checksum for files...')
 
-hash_string = ""
+hash_string = ''
 
 if os.path.isfile (PORTABLE_FILE):
 	hash_string = hash_string + calculate_hash (PORTABLE_FILE)
 
-if os.path.isfile (PDB_PACKAGE_FILE):
-	hash_string = hash_string + calculate_hash (PDB_PACKAGE_FILE)
-
 if os.path.isfile (SETUP_FILE):
 	hash_string = hash_string + calculate_hash (SETUP_FILE)
 
-hash_string = hash_string + '#32-bit\n'
+if os.path.isfile (PDB_PACKAGE_FILE):
+	hash_string = hash_string + calculate_hash (PDB_PACKAGE_FILE)
 
-if os.path.isfile (os.path.join (TMP_DIRECTORY, '32', APP_NAME_SHORT + '.exe')):
-	hash_string = hash_string + calculate_hash (os.path.join (TMP_DIRECTORY, '32', APP_NAME_SHORT + '.exe'))
+if binary_hash_32:
+	hash_string = hash_string + '#32-bit\n' + binary_hash_32
 
-if os.path.isfile (os.path.join (TMP_DIRECTORY, '32', APP_NAME_SHORT + '.scr')):
-	hash_string = hash_string + calculate_hash (os.path.join (TMP_DIRECTORY, '32', APP_NAME_SHORT + '.scr'))
-
-hash_string = hash_string + '#64-bit\n'
-
-if os.path.isfile (os.path.join (TMP_DIRECTORY, '64', APP_NAME_SHORT + '.exe')):
-	hash_string = hash_string + calculate_hash (os.path.join (TMP_DIRECTORY, '64', APP_NAME_SHORT + '.exe'))
-
-if os.path.isfile (os.path.join (TMP_DIRECTORY, '64', APP_NAME_SHORT + '.scr')):
-	hash_string = hash_string + calculate_hash (os.path.join (TMP_DIRECTORY, '64', APP_NAME_SHORT + '.scr'))
+if binary_hash_64:
+	hash_string = hash_string + '#64-bit\n' + binary_hash_64
 
 if hash_string:
 	with open (CHECKSUM_FILE, 'w', newline='') as f:
@@ -253,4 +264,3 @@ if hash_string:
 print_clr ('Cleaning temporary files...')
 
 shutil.rmtree (TMP_DIRECTORY)
-
