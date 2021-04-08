@@ -88,8 +88,8 @@ ID_PTR = 100
 strings_array = {}
 locale_timestamp = 0
 
-# Load and parse string id's
-print_clr ('Load and parse string id\'s...');
+# Update resource header
+print_clr ('Update resource header...');
 
 with open (RESOURCE_H, 'r') as fn:
 	lines = fn.readlines ()
@@ -149,8 +149,8 @@ if not len (strings_array):
 	print_clr ('Dictionary is empty.',  True)
 	os.sys.exit ()
 
-# Load and parse strings
-print_clr ('Load and parse strings...');
+# Load strings
+print_clr ('Load strings...');
 
 with open (RESOURCE_RC, 'r') as fn:
 	lines = fn.readlines ()
