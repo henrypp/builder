@@ -169,9 +169,11 @@ with open (os.path.join (TMP_DIRECTORY, '64', 'portable.dat'), 'w', newline='') 
 
 copy_files (os.path.join (BIN_DIRECTORY, '*.bat'), os.path.join (TMP_DIRECTORY, '32'));
 copy_files (os.path.join (BIN_DIRECTORY, '*.reg'), os.path.join (TMP_DIRECTORY, '32'));
+copy_files (os.path.join (BIN_DIRECTORY, '*.dat'), os.path.join (TMP_DIRECTORY, '32'));
 
 copy_files (os.path.join (BIN_DIRECTORY, '*.bat'), os.path.join (TMP_DIRECTORY, '64'));
 copy_files (os.path.join (BIN_DIRECTORY, '*.reg'), os.path.join (TMP_DIRECTORY, '64'));
+copy_files (os.path.join (BIN_DIRECTORY, '*.dat'), os.path.join (TMP_DIRECTORY, '64'));
 
 print_clr ('Copy localization...')
 
