@@ -79,7 +79,7 @@ CURRENT_DIRECTORY = os.path.dirname (os.path.abspath (__file__))
 PROJECT_DIRECTORY = os.path.join (CURRENT_DIRECTORY, '..', APP_NAME_SHORT)
 BIN_DIRECTORY = os.path.join (PROJECT_DIRECTORY, 'bin')
 OUT_DIRECTORY = os.path.join (os.path.join (os.environ['USERPROFILE']), 'Desktop')
-TMP_DIRECTORY = os.path.join (CURRENT_DIRECTORY, "temp", APP_NAME_SHORT)
+TMP_DIRECTORY = os.path.join (os.environ['TEMP'], APP_NAME_SHORT + '-temp')
 
 PORTABLE_FILE = os.path.join (OUT_DIRECTORY, APP_NAME_SHORT + '-' + APP_VERSION + '-bin.zip')
 PDB_PACKAGE_FILE = os.path.join (OUT_DIRECTORY, APP_NAME_SHORT + '-' + APP_VERSION + '-pdb.zip')
