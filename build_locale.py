@@ -204,7 +204,8 @@ else:
 	# Enumerate localizations
 	print_clr ('Enumerate localizations...');
 
-	os.chmod (LOCALE_FILE, stat.S_IWRITE)
+	if os.path.isfile (LOCALE_FILE):
+		os.chmod (LOCALE_FILE, stat.S_IWRITE)
 
 	with open (LOCALE_FILE, 'w', encoding='utf-16') as lng_file:
 		lng_file.write ('; ' + APP_NAME_SHORT + '\n; https://github.com/henrypp/' + APP_NAME_SHORT + '/tree/master/bin/i18n\n;\n; DO NOT MODIFY THIS FILE -- YOUR CHANGES WILL BE ERASED!\n\n')
