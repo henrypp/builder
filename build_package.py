@@ -120,8 +120,8 @@ if os.path.isfile (os.path.join (CURRENT_DIRECTORY, '.editorconfig')) and not os
 if os.path.isfile (os.path.join (CURRENT_DIRECTORY, '.gitattributes')) and not os.path.isfile (os.path.join (PROJECT_DIRECTORY, '.gitattributes')):
 	copy_file (os.path.join (CURRENT_DIRECTORY, '.gitattributes'), os.path.join (PROJECT_DIRECTORY, '.gitattributes'))
 
-if os.path.isfile (os.path.join (CURRENT_DIRECTORY, '..gitignore')) and not os.path.isfile (os.path.join (PROJECT_DIRECTORY, '.gitignore')):
-	copy_file (os.path.join (CURRENT_DIRECTORY, '..gitignore'), os.path.join (PROJECT_DIRECTORYPROJECT_DIRECTORY, '..gitignore'))
+if os.path.isfile (os.path.join (CURRENT_DIRECTORY, '.gitignore')) and not os.path.isfile (os.path.join (PROJECT_DIRECTORY, '.gitignore')):
+	copy_file (os.path.join (CURRENT_DIRECTORY, '.gitignore'), os.path.join (PROJECT_DIRECTORY, '.gitignore'))
 
 if os.path.isfile (os.path.join (CURRENT_DIRECTORY, '.gitmodules')) and not os.path.isfile (os.path.join (PROJECT_DIRECTORY, '.gitmodules')):
 	copy_file (os.path.join (CURRENT_DIRECTORY, '.gitmodules'), os.path.join (PROJECT_DIRECTORY, '.gitmodules'))
