@@ -133,6 +133,9 @@ if os.path.isfile (os.path.join (BIN_DIRECTORY, 'History.txt')):
 if os.path.isdir (TMP_DIRECTORY):
 	shutil.rmtree (TMP_DIRECTORY)
 
+os.makedirs (os.path.join (TMP_DIRECTORY, '32'), exist_ok=True)
+os.makedirs (os.path.join (TMP_DIRECTORY, '64'), exist_ok=True)
+
 print_clr ('Copy documentation...')
 
 if os.path.isfile (os.path.join (BIN_DIRECTORY, 'Readme.txt')):
@@ -155,9 +158,11 @@ if os.path.isfile (os.path.join (BIN_DIRECTORY, APP_NAME_SHORT + '.txt')):
 
 with open (os.path.join (TMP_DIRECTORY, '32', 'portable.dat'), 'w', newline='') as f:
 	data = f.write ('#PORTABLE#')
+	f.close ()
 
 with open (os.path.join (TMP_DIRECTORY, '64', 'portable.dat'), 'w', newline='') as f:
 	data = f.write ('#PORTABLE#')
+	f.close ()
 
 copy_files (os.path.join (BIN_DIRECTORY, '*.bat'), os.path.join (TMP_DIRECTORY, '32'));
 copy_files (os.path.join (BIN_DIRECTORY, '*.reg'), os.path.join (TMP_DIRECTORY, '32'));
