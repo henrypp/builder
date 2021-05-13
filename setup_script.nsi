@@ -141,16 +141,10 @@ Section /o "Store settings in application directory (portable mode)" SecPortable
 SectionEnd
 
 Section "Create desktop shortcut" SecShortcut1
-	IfSilent skip
-
 	CreateShortCut "$DESKTOP\${APP_NAME}.lnk" "$INSTDIR\${APP_NAME_SHORT}.exe"
-
-	skip:
 SectionEnd
 
 Section "Create start menu shortcuts" SecShortcut2
-	IfSilent skip
-
 	CreateDirectory "$SMPROGRAMS\${APP_NAME}"
 
 	CreateShortCut "$SMPROGRAMS\${APP_NAME}\${APP_NAME}.lnk" "$INSTDIR\${APP_NAME_SHORT}.exe"
@@ -158,8 +152,6 @@ Section "Create start menu shortcuts" SecShortcut2
 	CreateShortCut "$SMPROGRAMS\${APP_NAME}\History.lnk" "$INSTDIR\History.txt"
 	CreateShortCut "$SMPROGRAMS\${APP_NAME}\Readme.lnk" "$INSTDIR\Readme.txt"
 	CreateShortCut "$SMPROGRAMS\${APP_NAME}\Uninstall.lnk" "$INSTDIR\uninstall.exe"
-
-	skip:
 SectionEnd
 
 Section "Uninstall"
@@ -277,8 +269,6 @@ Function SetPortableMode
 FunctionEnd
 
 Function CreateUninstallEntry
-	IfSilent skip
-
 	; Create uninstall entry only for non-portable mode
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "DisplayName" "${APP_NAME}"
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "DisplayIcon" '"$INSTDIR\${APP_NAME_SHORT}.exe"'
@@ -289,8 +279,6 @@ Function CreateUninstallEntry
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "HelpLink" "${APP_WEBSITE}"
 	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "NoModify" 1
 	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "NoRepair" 1
-
-	skip:
 FunctionEnd
 
 ; Version info
