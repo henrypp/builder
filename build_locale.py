@@ -4,15 +4,15 @@ import shutil
 import stat
 
 class bcolors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKCYAN = '\033[96m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
+	HEADER = '\033[95m'
+	OKBLUE = '\033[94m'
+	OKCYAN = '\033[96m'
+	OKGREEN = '\033[92m'
+	WARNING = '\033[93m'
+	FAIL = '\033[91m'
+	ENDC = '\033[0m'
+	BOLD = '\033[1m'
+	UNDERLINE = '\033[4m'
 
 def print_clr (text, is_error=False):
 	if is_error:
@@ -27,24 +27,6 @@ def find_and_set (dct, name, value):
 			return
 
 	print_clr ('string not found: "' + name + '"',  True)
-
-def find_and_set2 (dct, fn, number_key, value):
-	for k,v in dct.items ():
-		if int (k) == number_key:
-			fn.write (v['name'] + '=' + value + '\n')
-			return
-
-	print_clr ('string not found: "' + key + '"',  True)
-
-def find_and_set3 (dct, fn, key, value):
-	for k,v in dct.items ():
-		if v['name'] == key:
-			if value != v['value']:  # write only localized strings
-				fn.write ('{:03}'.format (int (k)) + '=' + value + '\n')
-
-			return
-
-	print_clr ('string not found: "' + key + '"',  True)
 
 # Colored terminal fix
 os.system ('')
@@ -86,6 +68,7 @@ ID_STRING = 1
 ID_PTR = 100
 
 strings_array = {}
+locale_lastname = ''
 locale_timestamp = 0
 
 # Update resource header
@@ -156,16 +139,17 @@ with open (RESOURCE_RC, 'r') as fn:
 	lines = fn.readlines ()
 
 	for line in lines:
-		line = line.strip ('\t\n ')
+		line = line.strip ('\t\r\n ')
 
 		if line.startswith ('IDS_'):
 			part = line.partition (' ')
 
 			if part[0] and part[2]:
+				key = part[0].strip ('\t "')
 				val = part[2].replace ('""', '"').strip ('\t "')
 
-				if val != '':
-					find_and_set (strings_array, part[0], val)
+				if key and val:
+					find_and_set (strings_array, key, val)
 
 	fn.close ()
 
@@ -173,10 +157,10 @@ with open (RESOURCE_RC, 'r') as fn:
 print_clr ('Create locale example file...');
 
 with open (os.path.join (I18N_DIRECTORY, '!example.txt'), 'w', encoding='utf-16') as fn:
-	fn.write ('; <language name>\n' + '; <author information>\n\n' + '[<locale name here>]\n')
+	fn.write ('; <language name>\n' + '; <author information>' + '\n\n' + '[<locale name here>]\n')
 
 	for k,v in strings_array.items ():
-		if v['value'] != '':
+		if v['value']:
 			fn.write (v['name'] + '=' + v['value'] + '\n')
 
 	fn.close ()
@@ -195,11 +179,14 @@ else:
 		if not f.endswith ('.ini'):
 			continue
 
+		locale_name = os.path.splitext (f)[0]
 		locale_path = os.path.join (I18N_DIRECTORY, f)
+
 		lastmod = int (os.path.getmtime (locale_path));
 
 		if lastmod > locale_timestamp:
 			locale_timestamp = lastmod
+			locale_lastname = locale_name
 
 	# Enumerate localizations
 	print_clr ('Enumerate localizations...');
@@ -208,7 +195,9 @@ else:
 		os.chmod (LOCALE_FILE, stat.S_IWRITE)
 
 	with open (LOCALE_FILE, 'w', encoding='utf-16') as lng_file:
-		lng_file.write ('; ' + APP_NAME_SHORT + '\n; https://github.com/henrypp/' + APP_NAME_SHORT + '/tree/master/bin/i18n\n;\n; DO NOT MODIFY THIS FILE -- YOUR CHANGES WILL BE ERASED!\n\n')
+		lng_file.write ('; ' + APP_NAME_SHORT + '\n')
+		lng_file.write ('; https://github.com/henrypp/' + APP_NAME_SHORT + '/tree/master/bin/i18n\n')
+		lng_file.write (';\n; DO NOT MODIFY THIS FILE -- YOUR CHANGES WILL BE ERASED!\n\n')
 
 		for f in i18n_files:
 			if not f.endswith ('.ini'):
@@ -219,31 +208,33 @@ else:
 
 			print ('Processing "' + locale_name + '" locale...')
 
-			with open (locale_path, mode='r', encoding='utf-16') as fn:
-				lines = fn.readlines ()
-				fn.close ()
+			with open (locale_path, mode='r', encoding='utf-16') as ini_file:
+				lines = ini_file.readlines ()
+				ini_file.close ()
 
 				filemtime = os.path.getmtime (locale_path);
 
-				with open (os.path.join (I18N_DIRECTORY, f), 'w', encoding='utf-16') as fn:
-					# Get locale description
+				with open (os.path.join (I18N_DIRECTORY, f), 'w', encoding='utf-16') as ini_file:
+					# Get locale structure
 					locale_desc = ''
+					locale_array = {}
 
 					for line in lines:
-						if line.startswith ('; '):
+						if line.startswith (';'):
 							locale_desc = locale_desc + line
 
-					if locale_desc != '':
+					if locale_desc:
 						locale_desc = locale_desc + '\n'
 
 					# Write locale header
-					fn.write (locale_desc + '[' + locale_name + ']\n')
+					ini_file.write (locale_desc + '[' + locale_name + ']\n')
 					lng_file.write (locale_desc + '[' + locale_name + ']\n')
 
 					# Write locale timestamp
 					if locale_name.lower () == 'russian':
 						lng_file.write ('000=' + str (locale_timestamp) + '\n')
 
+					# Parse locale string array
 					for line in lines:
 						line = line.strip ('\t\n ')
 
@@ -256,21 +247,35 @@ else:
 							key = part[0].strip ('\t\n ');
 							value = part[2].strip ('\t\n ');
 
-							if key.isdigit ():
-								number_key = int (key.lstrip ('0'))
+							locale_array[key] = value
 
-								find_and_set2 (strings_array, fn, number_key, value)
-								lng_file.write ('{:03}'.format (number_key) + '=' + value + '\n')
+					# Write parsed locale array into a file
+					for k,v in strings_array.items ():
+						if not v['value']:
+							continue
 
-							else:
-								fn.write (key + '=' + value + '\n')
-								find_and_set3 (strings_array, lng_file, key, value)
+						key = v['name']
+						number_key = '{:03}'.format (int (k))
+
+						if number_key in locale_array:
+							value = locale_array[number_key]
+
+						elif key in locale_array:
+							value = locale_array[key]
+
+						else:
+							value = v['value']
+
+						ini_file.write (key + '=' + value + '\n')
+
+						if value != v['value']:  # write only localized strings
+							lng_file.write (number_key + '=' + value + '\n')
 
 					# Line-ending hack
 					if i18n_files[-1] != f:
 						lng_file.write ('\n')
 
-					fn.close ()
+					ini_file.close ()
 
 					os.utime (locale_path, (filemtime, filemtime))
 
@@ -279,4 +284,4 @@ else:
 	shutil.copyfile (LOCALE_FILE, os.path.join (PROJECT_DIRECTORY, 'bin', '32', APP_NAME_SHORT + '.lng'))
 	shutil.copyfile (LOCALE_FILE, os.path.join (PROJECT_DIRECTORY, 'bin', '64', APP_NAME_SHORT + '.lng'))
 
-print ('\nLocale timestamp: ' + str (locale_timestamp))
+print ('\nLocale timestamp: ' + str (locale_timestamp) + ' (' + locale_lastname + ').')
