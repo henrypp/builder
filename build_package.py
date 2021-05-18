@@ -218,14 +218,9 @@ pack_dir (PORTABLE_FILE, TMP_DIRECTORY)
 if APP_NAME != '':
 	print_clr ('Create setup package...')
 
-	# Copy installer icon
-	copy_file (os.path.join (PROJECT_DIRECTORY, "src", "res", "100.ico"), os.path.join (CURRENT_DIRECTORY, "logo.ico"))
-
 	os.system ('makensis.exe /DAPP_FILES_DIR="' + TMP_DIRECTORY + '" /DAPP_NAME="' + APP_NAME + '" /DAPP_NAME_SHORT="' + APP_NAME_SHORT + '" /DAPP_VERSION="' + APP_VERSION + '" /X"OutFile ' + SETUP_FILE +'" setup_script.nsi')
 
 	sign_file (SETUP_FILE)
-
-	remove_file (os.path.join (CURRENT_DIRECTORY, 'logo.ico'))
 
 print_clr ('Create debug symbols package...')
 
