@@ -191,97 +191,102 @@ else:
 	# Enumerate localizations
 	print_clr ('Enumerate localizations...');
 
+	lng_content = '; ' + APP_NAME_SHORT + '\n'
+	lng_content = lng_content + '; https://github.com/henrypp/' + APP_NAME_SHORT + '/tree/master/bin/i18n\n'
+	lng_content = lng_content + ';\n; DO NOT MODIFY THIS FILE -- YOUR CHANGES WILL BE ERASED!\n\n'
+
+	for f in i18n_files:
+		if not f.endswith ('.ini'):
+			continue
+
+		locale_name = os.path.splitext (f)[0]
+		locale_path = os.path.join (I18N_DIRECTORY, f)
+
+		print ('Processing "' + locale_name + '" locale...')
+
+		with open (locale_path, mode='r', encoding='utf-16') as ini_file:
+			lines = ini_file.readlines ()
+			ini_file.close ()
+
+			# Get locale structure
+			locale_content = ''
+			locale_desc = ''
+			locale_array = {}
+
+			for line in lines:
+				if line.startswith (';'):
+					locale_desc = locale_desc + line
+
+			if locale_desc:
+				locale_desc = locale_desc + '\n'
+
+			# Write locale header
+			locale_content = locale_content + locale_desc + '[' + locale_name + ']\n'
+			lng_content = lng_content + locale_desc + '[' + locale_name + ']\n'
+
+			# Write locale timestamp
+			if locale_name.lower () == 'russian':
+				lng_content = lng_content + '000=' + str (locale_timestamp) + '\n'
+
+			# Parse locale string array
+			for line in lines:
+				line = line.strip ('\t\n ')
+
+				if line.startswith (';'):
+					continue
+
+				part = line.partition ('=')
+
+				if part[0] and part[2]:
+					key = part[0].strip ('\t\n ');
+					value = part[2].strip ('\t\n ');
+
+					locale_array[key] = value
+
+			# Write parsed locale array into a file
+			for k,v in strings_array.items ():
+				if not v['value']:
+					continue
+
+				key = v['name']
+				number_key = '{:03}'.format (int (k))
+
+				if number_key in locale_array:
+					value = locale_array[number_key]
+
+				elif key in locale_array:
+					value = locale_array[key]
+
+				else:
+					value = v['value']
+
+				locale_content = locale_content + key + '=' + value + '\n'
+
+				if value != v['value']:  # write only localized strings
+					lng_content = lng_content + number_key + '=' + value + '\n'
+
+			# Line-ending hack
+			if i18n_files[-1] != f:
+				lng_content = lng_content + '\n'
+
+			# Write updated language template
+			filemtime = os.path.getmtime (locale_path);
+
+			with open (locale_path, 'w', encoding='utf-16') as ini_file:
+				ini_file.write (locale_content)
+				ini_file.close ()
+
+			os.utime (locale_path, (filemtime, filemtime))
+
+	# Write updated language content
 	if os.path.isfile (LOCALE_FILE):
 		os.chmod (LOCALE_FILE, stat.S_IWRITE)
 
-	with open (LOCALE_FILE, 'w', encoding='utf-16') as lng_file:
-		lng_file.write ('; ' + APP_NAME_SHORT + '\n')
-		lng_file.write ('; https://github.com/henrypp/' + APP_NAME_SHORT + '/tree/master/bin/i18n\n')
-		lng_file.write (';\n; DO NOT MODIFY THIS FILE -- YOUR CHANGES WILL BE ERASED!\n\n')
+		with open (LOCALE_FILE, 'w', encoding='utf-16') as lng_file:
+			lng_file.write (lng_content)
+			lng_file.close ()
 
-		for f in i18n_files:
-			if not f.endswith ('.ini'):
-				continue
-
-			locale_name = os.path.splitext (f)[0]
-			locale_path = os.path.join (I18N_DIRECTORY, f)
-
-			print ('Processing "' + locale_name + '" locale...')
-
-			with open (locale_path, mode='r', encoding='utf-16') as ini_file:
-				lines = ini_file.readlines ()
-				ini_file.close ()
-
-				filemtime = os.path.getmtime (locale_path);
-
-				with open (os.path.join (I18N_DIRECTORY, f), 'w', encoding='utf-16') as ini_file:
-					# Get locale structure
-					locale_desc = ''
-					locale_array = {}
-
-					for line in lines:
-						if line.startswith (';'):
-							locale_desc = locale_desc + line
-
-					if locale_desc:
-						locale_desc = locale_desc + '\n'
-
-					# Write locale header
-					ini_file.write (locale_desc + '[' + locale_name + ']\n')
-					lng_file.write (locale_desc + '[' + locale_name + ']\n')
-
-					# Write locale timestamp
-					if locale_name.lower () == 'russian':
-						lng_file.write ('000=' + str (locale_timestamp) + '\n')
-
-					# Parse locale string array
-					for line in lines:
-						line = line.strip ('\t\n ')
-
-						if line.startswith (';'):
-							continue
-
-						part = line.partition ('=')
-
-						if part[0] and part[2]:
-							key = part[0].strip ('\t\n ');
-							value = part[2].strip ('\t\n ');
-
-							locale_array[key] = value
-
-					# Write parsed locale array into a file
-					for k,v in strings_array.items ():
-						if not v['value']:
-							continue
-
-						key = v['name']
-						number_key = '{:03}'.format (int (k))
-
-						if number_key in locale_array:
-							value = locale_array[number_key]
-
-						elif key in locale_array:
-							value = locale_array[key]
-
-						else:
-							value = v['value']
-
-						ini_file.write (key + '=' + value + '\n')
-
-						if value != v['value']:  # write only localized strings
-							lng_file.write (number_key + '=' + value + '\n')
-
-					# Line-ending hack
-					if i18n_files[-1] != f:
-						lng_file.write ('\n')
-
-					ini_file.close ()
-
-					os.utime (locale_path, (filemtime, filemtime))
-
-	lng_file.close ()
-
-	shutil.copyfile (LOCALE_FILE, os.path.join (PROJECT_DIRECTORY, 'bin', '32', APP_NAME_SHORT + '.lng'))
-	shutil.copyfile (LOCALE_FILE, os.path.join (PROJECT_DIRECTORY, 'bin', '64', APP_NAME_SHORT + '.lng'))
+		shutil.copyfile (LOCALE_FILE, os.path.join (PROJECT_DIRECTORY, 'bin', '32', APP_NAME_SHORT + '.lng'))
+		shutil.copyfile (LOCALE_FILE, os.path.join (PROJECT_DIRECTORY, 'bin', '64', APP_NAME_SHORT + '.lng'))
 
 print ('\nLocale timestamp: ' + str (locale_timestamp) + ' (' + locale_lastname + ').')
