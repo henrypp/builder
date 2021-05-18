@@ -1,7 +1,7 @@
 @echo off
 
 if [%1]==[] (
-	echo Usage: build_locale.bat app_name_short app_name
+	echo Usage: build_locale.bat app_name_short
 	pause
 	exit
 )
