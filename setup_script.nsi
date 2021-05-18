@@ -3,6 +3,7 @@ SetCompress force
 SetCompressor /SOLID lzma
 SetCompressorDictSize 64
 SetDatablockOptimize on
+SetDateSave off
 SetCompress force
 CRCCheck force
 Unicode true
@@ -54,6 +55,7 @@ Var /GLOBAL ProfilePath
 AllowSkipFiles off
 AutoCloseWindow false
 LicenseBkColor /windows
+LicenseForceSelection checkbox
 ManifestSupportedOS all
 ManifestLongPathAware true
 ManifestDPIAware true
@@ -69,7 +71,7 @@ BrandingText "${COPYRIGHT}"
 Caption "${APP_NAME} v${APP_VERSION}"
 UninstallCaption "${APP_NAME}"
 
-Icon "logo.ico"
+Icon "${NSISDIR}\Contrib\Graphics\Icons\classic-install.ico"
 UninstallIcon "${NSISDIR}\Contrib\Graphics\Icons\classic-uninstall.ico"
 
 InstallDir "$PROGRAMFILES64\${APP_NAME}"
@@ -86,7 +88,8 @@ Function .onInit
 	; Windows 7 and later
 	${If} ${APP_NAME_SHORT} == 'simplewall'
 		${IfNot} ${AtLeastWin7}
-			MessageBox MB_OK|MB_ICONEXCLAMATION|MB_TOPMOST '"${APP_NAME}" requires Windows 7 or later.'
+			MessageBox MB_OK|MB_ICONEXCLAMATION '"${APP_NAME}" requires Windows 7 or later.'
+			SetErrorLevel 1150 ; ERROR_OLD_WIN_VERSION
 			Abort
 		${EndIf}
 	${EndIf}
@@ -97,12 +100,12 @@ Function un.onInit
 		SetRegView 64
 	${EndIf}
 
-	MessageBox MB_YESNO|MB_ICONEXCLAMATION|MB_TOPMOST|MB_DEFBUTTON2 'Are you sure you want to uninstall "${APP_NAME}"?' IDYES +2
+	MessageBox MB_YESNO|MB_ICONEXCLAMATION|MB_DEFBUTTON2 'Are you sure you want to uninstall "${APP_NAME}"?' IDYES +2
 	Abort
 FunctionEnd
 
 Function un.onUninstSuccess
-	MessageBox MB_OK|MB_ICONINFORMATION|MB_TOPMOST '"${APP_NAME}" was completely removed.'
+	MessageBox MB_OK|MB_ICONINFORMATION '"${APP_NAME}" was completely removed.'
 FunctionEnd
 
 Section "!${APP_NAME}"
@@ -118,7 +121,6 @@ Section "!${APP_NAME}"
 		File /nonfatal "${APP_FILES_DIR}\32\${APP_NAME_SHORT}.exe.sig"
 	${EndIf}
 
-	File /nonfatal "${APP_FILES_DIR}\64\${APP_NAME_SHORT}.lng"
 	File "${APP_FILES_DIR}\64\History.txt"
 	File "${APP_FILES_DIR}\64\License.txt"
 	File "${APP_FILES_DIR}\64\Readme.txt"
@@ -126,6 +128,12 @@ Section "!${APP_NAME}"
 	WriteUninstaller $INSTDIR\uninstall.exe
 
 	Call CreateUninstallEntry
+SectionEnd
+
+Section "Localization"
+	SetOutPath $INSTDIR
+
+	File /nonfatal "${APP_FILES_DIR}\64\${APP_NAME_SHORT}.lng"
 SectionEnd
 
 Section /o "Store settings in application directory (portable mode)" SecPortable
@@ -156,7 +164,7 @@ SectionEnd
 
 Section "Uninstall"
 	${If} ${APP_NAME_SHORT} == 'simplewall'
-		ExecWait '"$INSTDIR\${APP_NAME_SHORT}.exe" /uninstall'
+		ExecWait '"$INSTDIR\${APP_NAME_SHORT}.exe" -uninstall'
 	${EndIf}
 
 	; Remove "skipuac" entry
@@ -176,9 +184,6 @@ Section "Uninstall"
 	RMDir "$APPDATA\${APP_AUTHOR}"
 
 	portable:
-
-	; Remove localizations
-	RMDir /r "$INSTDIR\i18n"
 
 	; Remove plugins (if exists)
 	RMDir /r "$INSTDIR\plugins"
@@ -200,17 +205,9 @@ Section "Uninstall"
 	Delete "$INSTDIR\FAQ.txt"
 
 	${If} ${APP_NAME_SHORT} == 'simplewall'
-		Delete "$INSTDIR\apps.xml"
-		Delete "$INSTDIR\blocklist.xml"
-		Delete "$INSTDIR\rules_system.xml"
-		Delete "$INSTDIR\rules_custom.xml"
-		Delete "$INSTDIR\rules_config.xml"
 		Delete "$INSTDIR\profile.xml"
 		Delete "$INSTDIR\profile_internal.xml"
 
-		Delete "$INSTDIR\apps.xml.bak"
-		Delete "$INSTDIR\rules_custom.xml.bak"
-		Delete "$INSTDIR\rules_config.xml.bak"
 		Delete "$INSTDIR\profile.xml.bak"
 	${EndIf}
 
@@ -282,12 +279,13 @@ Function CreateUninstallEntry
 FunctionEnd
 
 ; Version info
-VIAddVersionKey "ProductName" "${APP_NAME}"
-VIAddVersionKey "ProductVersion" "${APP_VERSION}"
 VIAddVersionKey "Comments" "${APP_WEBSITE}"
+VIAddVersionKey "CompanyName" "${APP_AUTHOR}"
 VIAddVersionKey "FileDescription" "${APP_NAME}"
 VIAddVersionKey "FileVersion" "${APP_VERSION}"
+VIAddVersionKey "InternalName" "${APP_NAME_SHORT}"
 VIAddVersionKey "LegalCopyright" "${COPYRIGHT}"
+VIAddVersionKey "OriginalFilename" "${APP_NAME_SHORT}-${APP_VERSION}-setup.exe"
+VIAddVersionKey "ProductName" "${APP_NAME}"
+VIAddVersionKey "ProductVersion" "${APP_VERSION}"
 VIProductVersion "${APP_VERSION}.0.0"
-
-;!packhdr "$%TEMP%\exehead.tmp" '"upx.exe" "$%TEMP%\exehead.tmp"'
