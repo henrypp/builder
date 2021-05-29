@@ -216,6 +216,8 @@ else:
 			for line in lines:
 				if line.startswith (';'):
 					locale_desc = locale_desc + line
+				else:
+					break
 
 			if locale_desc:
 				locale_desc = locale_desc + '\n'
