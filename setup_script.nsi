@@ -14,8 +14,6 @@ Unicode true
 !include "x64.nsh"
 !include "WinVer.nsh"
 
-Var /GLOBAL ProfilePath
-
 ; Defines
 !define APP_AUTHOR "Henry++"
 !define APP_WEBSITE_HOST "www.henrypp.org"
@@ -24,19 +22,22 @@ Var /GLOBAL ProfilePath
 !define COPYRIGHT "(c) ${APP_AUTHOR}. All rights reversed."
 !define LICENSE_FILE "${APP_FILES_DIR}\64\License.txt"
 
-;!define MUI_ABORTWARNING
+!define MUI_ABORTWARNING
 !define MUI_FINISHPAGE_NOAUTOCLOSE
 !define MUI_COMPONENTSPAGE_NODESC
 
-!define MUI_WELCOMEFINISHPAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Wizard\nsis3-metro.bmp"
+!define MUI_WELCOMEFINISHPAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Wizard\win.bmp"
 !define MUI_HEADERIMAGE
-!define MUI_HEADERIMAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Header\nsis3-metro.bmp"
+!define MUI_HEADERIMAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Header\nsis.bmp"
 
 !define MUI_FINISHPAGE_RUN
 !define MUI_FINISHPAGE_RUN_FUNCTION RunApplication
 
-!define MUI_FINISHPAGE_LINK_LOCATION "${APP_WEBSITE}"
-!define MUI_FINISHPAGE_LINK "${APP_WEBSITE_HOST}"
+!define MUI_FINISHPAGE_SHOWREADME
+!define MUI_FINISHPAGE_SHOWREADME_TEXT "Show release notes"
+!define MUI_FINISHPAGE_SHOWREADME_FUNCTION ShowReleaseNotes
+
+!define MUI_FINISHPAGE_NOREBOOTSUPPORT
 
 ; Pages
 !insertmacro MUI_PAGE_WELCOME
@@ -44,7 +45,6 @@ Var /GLOBAL ProfilePath
 !define MUI_PAGE_CUSTOMFUNCTION_LEAVE IsPortable
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_COMPONENTS
-!define MUI_PAGE_CUSTOMFUNCTION_PRE SetPortableMode
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
 
@@ -59,7 +59,6 @@ LicenseForceSelection checkbox
 ManifestSupportedOS all
 ManifestLongPathAware true
 ManifestDPIAware true
-SetFont 'Segoe UI' 8
 ShowInstDetails show
 ShowUninstDetails nevershow
 SilentUnInstall silent
@@ -77,8 +76,8 @@ UninstallIcon "${NSISDIR}\Contrib\Graphics\Icons\classic-uninstall.ico"
 InstallDir "$PROGRAMFILES64\${APP_NAME}"
 InstallDirRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "InstallLocation"
 
-;OutFile "${APP_NAME_SHORT}_${APP_VERSION}_setup.exe"
-RequestExecutionLevel highest
+;OutFile "${APP_NAME_SHORT}-${APP_VERSION}-setup.exe"
+RequestExecutionLevel admin
 
 Function .onInit
 	${If} ${RunningX64}
@@ -88,8 +87,8 @@ Function .onInit
 	; Windows 7 and later
 	${If} ${APP_NAME_SHORT} == 'simplewall'
 		${IfNot} ${AtLeastWin7}
-			MessageBox MB_OK|MB_ICONEXCLAMATION '${APP_NAME} requires Windows 7 or later.'
-			SetErrorLevel 1150 ; ERROR_OLD_WIN_VERSION
+			IfSilent +1
+			MessageBox MB_OK|MB_ICONEXCLAMATION '${APP_NAME} requires Windows 7 SP1 or later.'
 			Abort
 		${EndIf}
 	${EndIf}
@@ -100,12 +99,20 @@ Function un.onInit
 		SetRegView 64
 	${EndIf}
 
-	MessageBox MB_YESNO|MB_ICONEXCLAMATION|MB_DEFBUTTON2 'Are you sure you want to uninstall ${APP_NAME}?' IDYES +2
+	IfSilent end
+
+	MessageBox MB_YESNO|MB_ICONEXCLAMATION|MB_DEFBUTTON2 'Are you sure you want to uninstall ${APP_NAME}?' IDYES +1
 	Abort
+
+	end:
 FunctionEnd
 
 Function un.onUninstSuccess
+	IfSilent end
+
 	MessageBox MB_OK|MB_ICONINFORMATION '${APP_NAME} was completely removed.'
+
+	end:
 FunctionEnd
 
 Section "!${APP_NAME}"
@@ -127,25 +134,24 @@ Section "!${APP_NAME}"
 
 	WriteUninstaller $INSTDIR\uninstall.exe
 
-	Call CreateUninstallEntry
+	; Create uninstall entry
+	WriteRegExpandStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "InstallLocation" '"$INSTDIR"'
+	WriteRegExpandStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "UninstallString" '"$INSTDIR\uninstall.exe"'
+
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "DisplayName" "${APP_NAME}"
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "DisplayIcon" '"$INSTDIR\${APP_NAME_SHORT}.exe"'
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "DisplayVersion" "${APP_VERSION}"
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "Publisher" "${APP_AUTHOR}"
+	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "URLInfoAbout" "${APP_WEBSITE}"
+
+	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "NoModify" 1
+	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "NoRepair" 1
 SectionEnd
 
 Section "Localization"
 	SetOutPath $INSTDIR
 
 	File /nonfatal "${APP_FILES_DIR}\64\${APP_NAME_SHORT}.lng"
-SectionEnd
-
-Section /o "Store settings in application directory (portable mode)" SecPortable
-	IfFileExists "$INSTDIR\${APP_NAME_SHORT}.ini" portable not_portable
-
-	; Create empty .ini
-	not_portable:
-	FileOpen $0 "$INSTDIR\portable.dat" w
-	FileWrite $0 "#PORTABLE#" ; we write a new line
-	FileClose $0
-
-	portable:
 SectionEnd
 
 Section "Create desktop shortcut" SecShortcut1
@@ -162,7 +168,26 @@ Section "Create start menu shortcuts" SecShortcut2
 	CreateShortCut "$SMPROGRAMS\${APP_NAME}\Uninstall.lnk" "$INSTDIR\uninstall.exe"
 SectionEnd
 
+Section /o "Store settings in application directory (portable mode)" SecPortable
+	IfFileExists "$INSTDIR\portable.dat" portable
+	IfFileExists "$INSTDIR\${APP_NAME_SHORT}.ini" portable not_portable
+
+	; Create portable indicator file
+	not_portable:
+	FileOpen $0 "$INSTDIR\portable.dat" w
+	FileWrite $0 "#PORTABLE#" ; we write a new line
+	FileClose $0
+
+	portable:
+SectionEnd
+
 Section "Uninstall"
+	IfFileExists $INSTDIR\${APP_NAME_SHORT}.exe installed
+		IfSilent +1
+		MessageBox MB_YESNO "It does not appear that ${APP_NAME} is installed in the directory '$INSTDIR'.$\r$\nContinue anyway (not recommended)?" IDYES installed
+		Abort
+	installed:
+
 	${If} ${APP_NAME_SHORT} == 'simplewall'
 		ExecWait '"$INSTDIR\${APP_NAME_SHORT}.exe" -uninstall'
 	${EndIf}
@@ -174,10 +199,8 @@ Section "Uninstall"
 	nsExec::Exec 'schtasks /delete /f /tn "${APP_NAME_SHORT}SkipUac"'
 
 	; Remove configuration from %appdata% only for non-portable mode
-	IfFileExists "$INSTDIR\${APP_NAME_SHORT}.ini" portable check2
-
-	check2:
-	IfFileExists "$INSTDIR\portable.dat" portable not_portable
+	IfFileExists "$INSTDIR\portable.dat" portable
+	IfFileExists "$INSTDIR\${APP_NAME_SHORT}.ini" portable not_portable
 
 	not_portable:
 	RMDir /r "$APPDATA\${APP_AUTHOR}\${APP_NAME}"
@@ -229,16 +252,26 @@ SectionEnd
 Function RunApplication
 	IfSilent skip
 
-	Exec '"$INSTDIR\${APP_NAME_SHORT}.exe"'
+	${If} ${FileExists} $INSTDIR\${APP_NAME_SHORT}.exe
+		Exec '"$INSTDIR\${APP_NAME_SHORT}.exe"'
+	${EndIf}
+
+	skip:
+FunctionEnd
+
+Function ShowReleaseNotes
+	IfSilent skip
+
+	${If} ${FileExists} $INSTDIR\History.txt
+		ExecShell "" '"$INSTDIR\History.txt"'
+	${EndIf}
 
 	skip:
 FunctionEnd
 
 Function IsPortable
-	IfFileExists "$INSTDIR\${APP_NAME_SHORT}.ini" portable check2
-
-	check2:
-	IfFileExists "$INSTDIR\portable.dat" portable not_portable
+	IfFileExists "$INSTDIR\portable.dat" portable 0
+	IfFileExists "$INSTDIR\${APP_NAME_SHORT}.ini" portable not_portable
 
 	portable:
 	SectionSetFlags ${SecPortable} ${SF_SELECTED}
@@ -246,7 +279,7 @@ Function IsPortable
 	SectionSetFlags ${SecShortcut1} 0
 	SectionSetFlags ${SecShortcut2} 0
 
-	Goto end
+	Goto skip
 	
 	not_portable:
 	SectionSetFlags ${SecPortable} 0
@@ -254,28 +287,7 @@ Function IsPortable
 	SectionSetFlags ${SecShortcut1} ${SF_SELECTED}
 	SectionSetFlags ${SecShortcut2} ${SF_SELECTED}
 
-	end:
-FunctionEnd
-
-Function SetPortableMode
-	${IfNot} ${SectionIsSelected} ${SecPortable}
-		StrCpy $ProfilePath "$APPDATA\${APP_AUTHOR}\${APP_NAME}"
-	${Else}
-		StrCpy $ProfilePath "$INSTDIR"
-	${EndIf}
-FunctionEnd
-
-Function CreateUninstallEntry
-	; Create uninstall entry only for non-portable mode
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "DisplayName" "${APP_NAME}"
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "DisplayIcon" '"$INSTDIR\${APP_NAME_SHORT}.exe"'
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "UninstallString" '"$INSTDIR\uninstall.exe"'
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "DisplayVersion" "${APP_VERSION}"
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "InstallLocation" '"$INSTDIR"'
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "Publisher" "${APP_AUTHOR}"
-	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "HelpLink" "${APP_WEBSITE}"
-	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "NoModify" 1
-	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "NoRepair" 1
+	skip:
 FunctionEnd
 
 ; Version info
