@@ -88,7 +88,7 @@ Function .onInit
 	; Windows 7 and later
 	${If} ${APP_NAME_SHORT} == 'simplewall'
 		${IfNot} ${AtLeastWin7}
-			MessageBox MB_OK|MB_ICONEXCLAMATION '"${APP_NAME}" requires Windows 7 or later.'
+			MessageBox MB_OK|MB_ICONEXCLAMATION '${APP_NAME} requires Windows 7 or later.'
 			SetErrorLevel 1150 ; ERROR_OLD_WIN_VERSION
 			Abort
 		${EndIf}
@@ -100,12 +100,12 @@ Function un.onInit
 		SetRegView 64
 	${EndIf}
 
-	MessageBox MB_YESNO|MB_ICONEXCLAMATION|MB_DEFBUTTON2 'Are you sure you want to uninstall "${APP_NAME}"?' IDYES +2
+	MessageBox MB_YESNO|MB_ICONEXCLAMATION|MB_DEFBUTTON2 'Are you sure you want to uninstall ${APP_NAME}?' IDYES +2
 	Abort
 FunctionEnd
 
 Function un.onUninstSuccess
-	MessageBox MB_OK|MB_ICONINFORMATION '"${APP_NAME}" was completely removed.'
+	MessageBox MB_OK|MB_ICONINFORMATION '${APP_NAME} was completely removed.'
 FunctionEnd
 
 Section "!${APP_NAME}"
