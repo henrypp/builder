@@ -78,17 +78,17 @@ with open (RESOURCE_H, 'r') as fn:
 	lines = fn.readlines ()
 	fn.close ()
 
-	f_out = open (RESOURCE_H, 'w')
+	fn = open (RESOURCE_H, 'w', newline='\r\n')
 
 	for ln in lines:
 		if not ln.startswith ('#define '):
-			f_out.write (ln)
+			fn.write (ln)
 
 		else:
 			var = ln.split (' ')
 
 			if len (var) != 3 or not var[1] or not var[2] or not var[2].strip ().isdigit ():
-				f_out.write (ln)
+				fn.write (ln)
 
 			else:
 				res_name = var[1].strip ()
@@ -124,9 +124,9 @@ with open (RESOURCE_H, 'r') as fn:
 					res_id = ID_PTR
 					ID_PTR += 1
 
-				f_out.write ('#define ' + res_name + ' ' + str (res_id) + '\n')
+				fn.write ('#define ' + res_name + ' ' + str (res_id) + '\n')
 
-	f_out.close ()
+	fn.close ()
 
 if not len (strings_array):
 	print_clr ('Dictionary is empty.',  True)
@@ -156,7 +156,7 @@ with open (RESOURCE_RC, 'r') as fn:
 # Create locale example file
 print_clr ('Create locale example file...');
 
-with open (os.path.join (I18N_DIRECTORY, '!example.txt'), 'w', encoding='utf-16') as fn:
+with open (os.path.join (I18N_DIRECTORY, '!example.txt'), 'w', encoding='utf-16', newline='\r\n') as fn:
 	fn.write ('; <language name>\n' + '; <author information>' + '\n\n' + '[<locale name here>]\n')
 
 	for k,v in strings_array.items ():
@@ -274,7 +274,7 @@ else:
 			# Write updated language template
 			filemtime = os.path.getmtime (locale_path);
 
-			with open (locale_path, 'w', encoding='utf-16') as ini_file:
+			with open (locale_path, 'w', encoding='utf-16', newline='\r\n') as ini_file:
 				ini_file.write (locale_content)
 				ini_file.close ()
 
@@ -284,7 +284,7 @@ else:
 	if os.path.isfile (LOCALE_FILE):
 		os.chmod (LOCALE_FILE, stat.S_IWRITE)
 
-		with open (LOCALE_FILE, 'w', encoding='utf-16') as lng_file:
+		with open (LOCALE_FILE, 'w', encoding='utf-16', newline='\r\n') as lng_file:
 			lng_file.write (lng_content)
 			lng_file.close ()
 
