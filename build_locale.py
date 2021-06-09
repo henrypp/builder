@@ -78,17 +78,19 @@ with open (RESOURCE_H, 'r') as fn:
 	lines = fn.readlines ()
 	fn.close ()
 
-	fn = open (RESOURCE_H, 'w', newline='\r\n')
+	header_content = ''
 
-	for ln in lines:
-		if not ln.startswith ('#define '):
-			fn.write (ln)
+	for line in lines:
+		line = line.strip ('\r\n')
+
+		if not line.startswith ('#define '):
+			header_content = header_content + line + '\n'
 
 		else:
-			var = ln.split (' ')
+			var = line.split (' ')
 
 			if len (var) != 3 or not var[1] or not var[2] or not var[2].strip ().isdigit ():
-				fn.write (ln)
+				header_content = header_content + line + '\n'
 
 			else:
 				res_name = var[1].strip ()
@@ -124,9 +126,12 @@ with open (RESOURCE_H, 'r') as fn:
 					res_id = ID_PTR
 					ID_PTR += 1
 
-				fn.write ('#define ' + res_name + ' ' + str (res_id) + '\n')
+				header_content = header_content + '#define ' + res_name + ' ' + str (res_id) + '\n'
 
-	fn.close ()
+	if header_content:
+		with open (RESOURCE_H, 'w', newline='\r\n') as fn:
+			fn.write (header_content)
+			fn.close ()
 
 if not len (strings_array):
 	print_clr ('Dictionary is empty.',  True)
