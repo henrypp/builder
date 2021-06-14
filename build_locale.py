@@ -289,10 +289,11 @@ else:
 	if os.path.isfile (LOCALE_FILE):
 		os.chmod (LOCALE_FILE, stat.S_IWRITE)
 
-		with open (LOCALE_FILE, 'w', encoding='utf-16', newline='\r\n') as lng_file:
-			lng_file.write (lng_content)
-			lng_file.close ()
+	with open (LOCALE_FILE, 'w', encoding='utf-16', newline='\r\n') as lng_file:
+		lng_file.write (lng_content)
+		lng_file.close ()
 
+	if os.path.isfile (LOCALE_FILE):
 		shutil.copyfile (LOCALE_FILE, os.path.join (PROJECT_DIRECTORY, 'bin', '32', APP_NAME_SHORT + '.lng'))
 		shutil.copyfile (LOCALE_FILE, os.path.join (PROJECT_DIRECTORY, 'bin', '64', APP_NAME_SHORT + '.lng'))
 
