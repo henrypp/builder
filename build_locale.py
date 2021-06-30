@@ -1,24 +1,6 @@
 import argparse
-import os
-import shutil
 import stat
-
-class bcolors:
-	HEADER = '\033[95m'
-	OKBLUE = '\033[94m'
-	OKCYAN = '\033[96m'
-	OKGREEN = '\033[92m'
-	WARNING = '\033[93m'
-	FAIL = '\033[91m'
-	ENDC = '\033[0m'
-	BOLD = '\033[1m'
-	UNDERLINE = '\033[4m'
-
-def print_clr (text, is_error=False):
-	if is_error:
-		print (f"{bcolors.FAIL}" + text + f"{bcolors.ENDC}")
-	else:
-		print (f"{bcolors.OKGREEN}" + text + f"{bcolors.ENDC}")
+from helper import *
 
 def find_and_set (dct, name, value):
 	for k,v in dct.items ():
@@ -26,10 +8,7 @@ def find_and_set (dct, name, value):
 			v['value'] = value
 			return
 
-	print_clr ('string not found: "' + name + '"',  True)
-
-# Colored terminal fix
-os.system ('')
+	log_status (status.FAILED, 'String was not found: "' + name + '"')
 
 parser = argparse.ArgumentParser (add_help=False, description='Build project locale.')
 parser.add_argument ('--name-short', help='project short name', required=True)
@@ -42,22 +21,18 @@ APP_NAME_SHORT=args.name_short
 CURRENT_DIRECTORY = os.path.dirname (os.path.abspath (__file__))
 PROJECT_DIRECTORY = os.path.join (CURRENT_DIRECTORY, '..', APP_NAME_SHORT)
 I18N_DIRECTORY = os.path.join (PROJECT_DIRECTORY, 'bin', 'i18n')
+EXAMPLE_DIRECTORY = os.path.join (I18N_DIRECTORY, '!example.txt')
 LOCALE_FILE = os.path.join (PROJECT_DIRECTORY, 'bin', APP_NAME_SHORT + '.lng')
 RESOURCE_H = os.path.join (PROJECT_DIRECTORY, 'src', 'resource.h')
 RESOURCE_RC = os.path.join (PROJECT_DIRECTORY, 'src', 'resource.rc')
+RESOURCE_RC = os.path.join (PROJECT_DIRECTORY, 'src', 'resource.rc')
 
-# Check configuration is right
-if not os.path.isdir (PROJECT_DIRECTORY):
-	print_clr ('Binaries directory "' + PROJECT_DIRECTORY + '" was not found.',  True)
-	os.sys.exit ()
+# Checking configuration
+log_status (status.TITLE, 'Checking configuration')
 
-if not os.path.isfile (RESOURCE_H):
-	print_clr ('Project resource header "' + PROJECT_DIRECTORY + '" was not found.',  True)
-	os.sys.exit ()
-
-if not os.path.isfile (RESOURCE_RC):
-	print_clr ('Project resource "' + PROJECT_DIRECTORY + '" was not found.',  True)
-	os.sys.exit ()
+check_path_with_status ('Project name', PROJECT_DIRECTORY)
+check_path_with_status ('Resource header', RESOURCE_H, True)
+check_path_with_status ('Resource code', RESOURCE_RC, True)
 
 ID_ACCELERATOR = 1
 ID_CONTROL = 100
@@ -68,11 +43,11 @@ ID_STRING = 1
 ID_PTR = 100
 
 strings_array = {}
-locale_lastname = ''
-locale_timestamp = 0
 
 # Update resource header
-print_clr ('Update resource header...');
+log_status (status.TITLE, 'Update resource header')
+
+clr = status.FAILED
 
 with open (RESOURCE_H, 'r') as fn:
 	lines = fn.readlines ()
@@ -84,13 +59,13 @@ with open (RESOURCE_H, 'r') as fn:
 		line = line.strip ('\r\n')
 
 		if not line.startswith ('#define '):
-			header_content = header_content + line + '\n'
+			header_content += line + '\n'
 
 		else:
 			var = line.split (' ')
 
 			if len (var) != 3 or not var[1] or not var[2] or not var[2].strip ().isdigit ():
-				header_content = header_content + line + '\n'
+				header_content += line + '\n'
 
 			else:
 				res_name = var[1].strip ()
@@ -126,19 +101,33 @@ with open (RESOURCE_H, 'r') as fn:
 					res_id = ID_PTR
 					ID_PTR += 1
 
-				header_content = header_content + '#define ' + res_name + ' ' + str (res_id) + '\n'
+				header_content += '#define ' + res_name + ' ' + str (res_id) + '\n'
 
 	if header_content:
 		with open (RESOURCE_H, 'w', newline='\r\n') as fn:
+			clr = status.SUCCESS
+
 			fn.write (header_content)
 			fn.close ()
 
-if not len (strings_array):
-	print_clr ('Dictionary is empty.',  True)
+log_status (clr, 'Update header content "' + get_file_name (RESOURCE_H) + '"')
+
+log_status (status.TITLE, 'Checking strings resources')
+
+if len (strings_array):
+	clr = status.SUCCESS
+else:
+	clr = status.FAILED
+
+log_status (clr, str (len (strings_array)) + ' string(s) was found')
+
+if clr == status.FAILED:
 	os.sys.exit ()
 
-# Load strings
-print_clr ('Load strings...');
+# Parse strings from resource code
+log_status (status.TITLE, 'Parse strings from resource code')
+
+clr = status.FAILED
 
 with open (RESOURCE_RC, 'r') as fn:
 	lines = fn.readlines ()
@@ -155,146 +144,177 @@ with open (RESOURCE_RC, 'r') as fn:
 
 				if key and val:
 					find_and_set (strings_array, key, val)
+					clr = status.SUCCESS
 
 	fn.close ()
 
-# Create locale example file
-print_clr ('Create locale example file...');
+log_status (clr, 'Parsing was finished')
 
-with open (os.path.join (I18N_DIRECTORY, '!example.txt'), 'w', encoding='utf-16', newline='\r\n') as fn:
+if clr != status.SUCCESS:
+	os.sys.exit ()
+
+# Create locale example file
+log_status (status.TITLE, 'Create locale example file')
+
+clr = status.FAILED
+
+with open (EXAMPLE_DIRECTORY, 'w', encoding='utf-16', newline='\r\n') as fn:
 	fn.write ('; <language name>\n' + '; <author information>' + '\n\n' + '[<locale name here>]\n')
 
 	for k,v in strings_array.items ():
 		if v['value']:
+			clr = status.SUCCESS
 			fn.write (v['name'] + '=' + v['value'] + '\n')
 
 	fn.close ()
 
+log_status (clr, 'Write file "' + get_file_name (EXAMPLE_DIRECTORY) + '" was finished')
+
 if not os.path.isdir (I18N_DIRECTORY):
-	print_clr ('Locale directory "' + I18N_DIRECTORY + '" was not found...');
+	log_status (bcolor.FAILED, 'Locale directory "' + I18N_DIRECTORY + '" was not found.')
+	os.sys.exit ()
 
-else:
+# Get localization timestamp
+i18n_files = os.listdir (I18N_DIRECTORY)
 
-	# Get localization timestamp
-	print_clr ('Get localization timestamp...');
+locale_timestamp = 0
+locale_lastname = ''
 
-	i18n_files = os.listdir (I18N_DIRECTORY)
+for name in i18n_files:
+	if not name.endswith ('.ini'):
+		continue
 
-	for f in i18n_files:
-		if not f.endswith ('.ini'):
-			continue
+	locale_name = os.path.splitext (name)[0]
+	locale_path = os.path.join (I18N_DIRECTORY, name)
 
-		locale_name = os.path.splitext (f)[0]
-		locale_path = os.path.join (I18N_DIRECTORY, f)
+	lastmod = os.path.getmtime (locale_path);
 
-		lastmod = int (os.path.getmtime (locale_path));
+	if lastmod > locale_timestamp:
+		locale_timestamp = lastmod
+		locale_lastname = locale_name
 
-		if lastmod > locale_timestamp:
-			locale_timestamp = lastmod
-			locale_lastname = locale_name
+locale_timestamp = int (locale_timestamp)
 
-	# Enumerate localizations
-	print_clr ('Enumerate localizations...');
+# Enumerate localizations
+log_status (status.TITLE, 'Enumerate localizations')
 
-	lng_content = '; ' + APP_NAME_SHORT + '\n'
-	lng_content = lng_content + '; https://github.com/henrypp/' + APP_NAME_SHORT + '/tree/master/bin/i18n\n'
-	lng_content = lng_content + ';\n; DO NOT MODIFY THIS FILE -- YOUR CHANGES WILL BE ERASED!\n\n'
+lng_content = '; ' + APP_NAME_SHORT + '\n'
+lng_content = lng_content + '; https://github.com/henrypp/' + APP_NAME_SHORT + '/tree/master/bin/i18n\n'
+lng_content = lng_content + ';\n; DO NOT MODIFY THIS FILE -- YOUR CHANGES WILL BE ERASED!\n\n'
 
-	for f in i18n_files:
-		if not f.endswith ('.ini'):
-			continue
+for name in i18n_files:
+	if not name.endswith ('.ini'):
+		continue
 
-		locale_name = os.path.splitext (f)[0]
-		locale_path = os.path.join (I18N_DIRECTORY, f)
+	clr = status.FAILED
 
-		print ('Processing "' + locale_name + '" locale...')
+	locale_name = os.path.splitext (name)[0]
+	locale_path = os.path.join (I18N_DIRECTORY, name)
 
-		with open (locale_path, mode='r', encoding='utf-16') as ini_file:
-			lines = ini_file.readlines ()
+	try:
+		ini_file = open (locale_path, mode='r', encoding='utf-16')
+		lines = ini_file.readlines ()
+		ini_file.close ()
+
+	except Exception as e:
+		log_status (status.FAILED, 'Parsing "' + name + '" (' + str (e) + ')')
+
+	else:
+		# Get locale structure
+		locale_content = ''
+		locale_desc = ''
+		locale_array = {}
+
+		for line in lines:
+			if line.startswith (';'):
+				locale_desc += line
+			else:
+				break
+
+		if locale_desc:
+			locale_desc += '\n'
+
+		# Write locale header
+		locale_content += locale_desc + '[' + locale_name + ']\n'
+		lng_content += locale_desc + '[' + locale_name + ']\n'
+
+		# Write locale timestamp
+		if locale_name.lower () == 'russian':
+			lng_content += '000=' + str (locale_timestamp) + '\n'
+
+		# Parse locale string array
+		for line in lines:
+			line = line.strip ('\t\n ')
+
+			if line.startswith (';'):
+				continue
+
+			part = line.partition ('=')
+
+			if part[0] and part[2]:
+				key = part[0].strip ('\t\n ');
+				value = part[2].strip ('\t\n ');
+
+				locale_array[key] = value
+
+		# Write parsed locale array into a file
+		for k,v in strings_array.items ():
+			if not v['value']:
+				continue
+
+			key = v['name']
+			number_key = '{:03}'.format (int (k))
+
+			if number_key in locale_array:
+				value = locale_array[number_key]
+
+			elif key in locale_array:
+				value = locale_array[key]
+
+			else:
+				value = v['value']
+
+			locale_content += key + '=' + value + '\n'
+
+			if value != v['value']:  # write only localized strings
+				lng_content += number_key + '=' + value + '\n'
+
+			clr = status.SUCCESS
+
+		# Line-ending hack
+		if i18n_files[-1] != name:
+			lng_content += '\n'
+
+		# Write updated language template
+		filemtime = os.path.getmtime (locale_path);
+
+		with open (locale_path, 'w', encoding='utf-16', newline='\r\n') as ini_file:
+			ini_file.write (locale_content)
 			ini_file.close ()
 
-			# Get locale structure
-			locale_content = ''
-			locale_desc = ''
-			locale_array = {}
+		os.utime (locale_path, (filemtime, filemtime))
 
-			for line in lines:
-				if line.startswith (';'):
-					locale_desc = locale_desc + line
-				else:
-					break
+		log_status (clr, 'Parsing "' + name + '"')
 
-			if locale_desc:
-				locale_desc = locale_desc + '\n'
+# Write updated language content
+log_status (status.TITLE, 'Write updated language content')
 
-			# Write locale header
-			locale_content = locale_content + locale_desc + '[' + locale_name + ']\n'
-			lng_content = lng_content + locale_desc + '[' + locale_name + ']\n'
+if os.path.isfile (LOCALE_FILE):
+	os.chmod (LOCALE_FILE, stat.S_IWRITE)
 
-			# Write locale timestamp
-			if locale_name.lower () == 'russian':
-				lng_content = lng_content + '000=' + str (locale_timestamp) + '\n'
+try:
+	lng_file = open (LOCALE_FILE, 'w', encoding='utf-16', newline='\r\n')
+	lng_file.write (lng_content)
+	lng_file.close ()
 
-			# Parse locale string array
-			for line in lines:
-				line = line.strip ('\t\n ')
+except Exception as e:
+	log_status (status.FAILED, 'Write locale "' + get_file_name (LOCALE_FILE) + '" (' + str (e) + ')')
 
-				if line.startswith (';'):
-					continue
+else:
+	log_status (status.SUCCESS, 'Write locale "' + get_file_name (LOCALE_FILE) + '"')
 
-				part = line.partition ('=')
-
-				if part[0] and part[2]:
-					key = part[0].strip ('\t\n ');
-					value = part[2].strip ('\t\n ');
-
-					locale_array[key] = value
-
-			# Write parsed locale array into a file
-			for k,v in strings_array.items ():
-				if not v['value']:
-					continue
-
-				key = v['name']
-				number_key = '{:03}'.format (int (k))
-
-				if number_key in locale_array:
-					value = locale_array[number_key]
-
-				elif key in locale_array:
-					value = locale_array[key]
-
-				else:
-					value = v['value']
-
-				locale_content = locale_content + key + '=' + value + '\n'
-
-				if value != v['value']:  # write only localized strings
-					lng_content = lng_content + number_key + '=' + value + '\n'
-
-			# Line-ending hack
-			if i18n_files[-1] != f:
-				lng_content = lng_content + '\n'
-
-			# Write updated language template
-			filemtime = os.path.getmtime (locale_path);
-
-			with open (locale_path, 'w', encoding='utf-16', newline='\r\n') as ini_file:
-				ini_file.write (locale_content)
-				ini_file.close ()
-
-			os.utime (locale_path, (filemtime, filemtime))
-
-	# Write updated language content
-	if os.path.isfile (LOCALE_FILE):
-		os.chmod (LOCALE_FILE, stat.S_IWRITE)
-
-	with open (LOCALE_FILE, 'w', encoding='utf-16', newline='\r\n') as lng_file:
-		lng_file.write (lng_content)
-		lng_file.close ()
-
-	if os.path.isfile (LOCALE_FILE):
-		shutil.copyfile (LOCALE_FILE, os.path.join (PROJECT_DIRECTORY, 'bin', '32', APP_NAME_SHORT + '.lng'))
-		shutil.copyfile (LOCALE_FILE, os.path.join (PROJECT_DIRECTORY, 'bin', '64', APP_NAME_SHORT + '.lng'))
+# Copy localization to binaries folders
+file_copy (LOCALE_FILE, os.path.join (PROJECT_DIRECTORY, 'bin', '32', os.path.basename (LOCALE_FILE)))
+file_copy (LOCALE_FILE, os.path.join (PROJECT_DIRECTORY, 'bin', '64', os.path.basename (LOCALE_FILE)))
 
 print ('\nLocale timestamp: ' + str (locale_timestamp) + ' (' + locale_lastname + ').')

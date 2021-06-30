@@ -1,36 +1,11 @@
 import argparse
 import configparser
-import os
-import shutil
-import stat
-
-class bcolors:
-	HEADER = '\033[95m'
-	OKBLUE = '\033[94m'
-	OKCYAN = '\033[96m'
-	OKGREEN = '\033[92m'
-	WARNING = '\033[93m'
-	FAIL = '\033[91m'
-	ENDC = '\033[0m'
-	BOLD = '\033[1m'
-	UNDERLINE = '\033[4m'
-
-def print_clr (text, clr=bcolors.OKGREEN):
-	if clr == bcolors.FAIL:
-		print (f"{bcolors.FAIL}" + text + f"{bcolors.ENDC}")
-	elif clr == bcolors.OKGREEN:
-		print (f"{bcolors.OKGREEN}" + text + f"{bcolors.ENDC}")
-	elif clr == bcolors.WARNING:
-		print (f"{bcolors.WARNING}" + text + f"{bcolors.ENDC}")
-	elif clr == bcolors.HEADER:
-		print (f"{bcolors.HEADER}" + text + f"{bcolors.ENDC}")
-	else:
-		print (text)
+from helper import *
 
 # Colored terminal fix
 os.system ('')
 
-parser = argparse.ArgumentParser (add_help=False, description='Build project locale.')
+parser = argparse.ArgumentParser (add_help=False, description='Copy project locale.')
 parser.add_argument ('--name-src', help='project short name source', required=True)
 parser.add_argument ('--name-dst', help='project short name destination', required=True)
 parser.add_argument ('--locale-key', help='key to found and replace', required=True)
@@ -48,84 +23,82 @@ PROJECT_DIRECTORY_DST = os.path.join (CURRENT_DIRECTORY, '..', APP_NAME_SHORT_DS
 I18N_DIRECTORY_SRC = os.path.join (PROJECT_DIRECTORY_SRC, 'bin', 'i18n')
 I18N_DIRECTORY_DST = os.path.join (PROJECT_DIRECTORY_DST, 'bin', 'i18n')
 
-# Check configuration is right
-if not os.path.isdir (PROJECT_DIRECTORY_SRC) or not os.path.isdir (PROJECT_DIRECTORY_DST):
-	print_clr ('Project directory was not found.', bcolors.FAIL)
-	os.sys.exit ()
+# Checking configuration
+log_status (status.TITLE, 'Checking configuration')
 
-if not os.path.isdir (I18N_DIRECTORY_SRC) or not os.path.isdir (I18N_DIRECTORY_DST):
-	print_clr ('Locale directory was not found...', bcolors.FAIL);
-	os.sys.exit ()
+check_path_with_status ('Project name (src)', PROJECT_DIRECTORY_SRC)
+check_path_with_status ('Project name (dst)', PROJECT_DIRECTORY_DST)
+check_path_with_status ('i18n directory (src)', I18N_DIRECTORY_SRC)
+check_path_with_status ('i18n directory (dst)', I18N_DIRECTORY_DST)
 
-else:
+log_status (status.SUCCESS, 'Key to copy "' + LOCALE_KEY + '" is set')
 
-	print_clr ('Start parsing localization key "' + LOCALE_KEY + '"...\n', 0)
+log_status (status.TITLE, 'Start parsing localization')
 
-	for f in os.listdir (I18N_DIRECTORY_DST):
-		if not f.endswith ('.ini'):
-			continue
+for name in os.listdir (I18N_DIRECTORY_DST):
+	if not name.endswith ('.ini'):
+		continue
 
-		locale_name = os.path.splitext (f)[0]
+	locale_name = os.path.splitext (name)[0]
+	locale_path_src = os.path.join (I18N_DIRECTORY_SRC, name)
 
-		locale_path_src = os.path.join (I18N_DIRECTORY_SRC, f)
+	if not os.path.isfile (locale_path_src):
+		log_status (status.FAILED, 'Locale "' + locale_name + '" was not found is src')
 
-		if not os.path.isfile (locale_path_src):
-			print_clr ('Locale "' + locale_name + '" was not found...', bcolors.FAIL)
+	else:
+
+		locale_ini_src = configparser.ConfigParser (delimiters='=')
+		locale_ini_src.optionxform = str
+
+		locale_ini_src.read (locale_path_src, encoding='utf-16')
+
+		if not locale_name in locale_ini_src or not LOCALE_KEY in locale_ini_src[locale_name]:
+			log_status (status.FAILED, 'Locale "' + locale_name + '" key was not found')
 
 		else:
+			locale_path_dst = os.path.join (I18N_DIRECTORY_DST, name)
 
-			locale_ini_src = configparser.ConfigParser (delimiters='=')
-			locale_ini_src.optionxform = str
+			locale_ini_dst = configparser.ConfigParser (delimiters='=')
+			locale_ini_dst.optionxform = str
 
-			locale_ini_src.read (locale_path_src, encoding='utf-16')
+			locale_ini_dst.read (locale_path_dst, encoding='utf-16')
 
-			if not locale_name in locale_ini_src or not LOCALE_KEY in locale_ini_src[locale_name]:
-				print_clr ('Locale "' + locale_name + '" key was not found...', bcolors.FAIL)
+			if not locale_name in locale_ini_dst:
+				log_status (status.FAILED, 'Locale "' + LOCALE_KEY + '" was incorrect')
+				continue
 
-			else:
-				locale_path_dst = os.path.join (I18N_DIRECTORY_DST, f)
+			locale_value = locale_ini_src[locale_name][LOCALE_KEY]
 
-				locale_ini_dst = configparser.ConfigParser (delimiters='=')
-				locale_ini_dst.optionxform = str
+			if LOCALE_KEY in locale_ini_dst[locale_name] and locale_ini_dst[locale_name][LOCALE_KEY] == locale_value:
+				log_status (status.WARNING, 'Locale "' + locale_name + '" was already localized')
+				continue
 
-				locale_ini_dst.read (locale_path_dst, encoding='utf-16')
+			log_status (status.SUCCESS, 'Locale "' + locale_name + '" key was updated')
 
-				if not locale_name in locale_ini_dst:
-					print_clr ('Locale "' + locale_name + '" was incorrect...', bcolors.FAIL)
-					continue
+			locale_ini_dst.set (locale_name, LOCALE_KEY, locale_value)
 
-				locale_value = locale_ini_src[locale_name][LOCALE_KEY]
+			# Update locale
+			locale_content = ''
 
-				if LOCALE_KEY in locale_ini_dst[locale_name] and locale_ini_dst[locale_name][LOCALE_KEY] == locale_value:
-					print_clr ('Locale "' + locale_name + '" have already localized...', bcolors.WARNING)
-					continue
+			with open (locale_path_dst, mode='r', encoding='utf-16') as ini_file:
+				lines = ini_file.readlines ()
+				ini_file.close ()
 
-				print_clr ('Locale "' + locale_name + '" key was updated...')
+				for line in lines:
+					if line.startswith (';'):
+						locale_content = locale_content + line
+					else:
+						break
 
-				locale_ini_dst.set (locale_name, LOCALE_KEY, locale_value)
+				if locale_content:
+					locale_content = locale_content + '\n'
 
-				# Update locale
-				locale_content = ''
+				locale_content = locale_content + '[' + locale_name + ']\n'
+				ini_file.close ()
 
-				with open (locale_path_dst, mode='r', encoding='utf-16') as ini_file:
-					lines = ini_file.readlines ()
-					ini_file.close ()
+			for name,value in locale_ini_dst.items (locale_name, raw=True):
+				locale_content = locale_content + name + '=' + value + '\n'
 
-					for line in lines:
-						if line.startswith (';'):
-							locale_content = locale_content + line
-						else:
-							break
-
-					if locale_content:
-						locale_content = locale_content + '\n'
-
-					locale_content = locale_content + '[' + locale_name + ']\n'
-					ini_file.close ()
-
-				for name,value in locale_ini_dst.items (locale_name, raw=True):
-					locale_content = locale_content + name + '=' + value + '\n'
-
-				with open (locale_path_dst, 'w', encoding='utf-16') as ini_file:
-					ini_file.write (locale_content)
-					ini_file.close ()
+			with open (locale_path_dst, 'w', encoding='utf-16') as ini_file:
+				ini_file.write (locale_content)
+				ini_file.close ()
