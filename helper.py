@@ -112,7 +112,7 @@ def file_create (path, data):
 	else:
 		log_status (status.SUCCESS, 'Create file: "' + get_file_name (path) + '"')
 
-def file_copy (src_file, dst_file):
+def file_copy (src_file, dst_file, made_dir=True):
 	if not os.path.isfile (src_file):
 		log_status (status.FAILED, 'File copy. Not found: "' + get_file_name (src_file) + '"')
 		return
@@ -121,7 +121,11 @@ def file_copy (src_file, dst_file):
 	file_name = get_file_name (dst_file)
 
 	if not os.path.isdir (dst_dir):
-		os.makedirs (dst_dir, exist_ok=True)
+		if made_dir:
+			os.makedirs (dst_dir, exist_ok=True)
+		else:
+			log_status (status.WARNING, 'File copy. Dest directory: "' + get_file_name (dst_dir) + '" was not found.')
+			return
 
 	# Check file existence
 	if os.path.isfile (dst_file):
