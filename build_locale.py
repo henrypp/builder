@@ -10,6 +10,56 @@ def find_and_set (dct, name, value):
 
 	log_status (status.FAILED, 'String was not found: "' + name + '"')
 
+# https://www.alchemysoftware.com/livedocs/ezscript/Topics/Catalyst/Language.htm
+def get_locale_name (name):
+	ldict = {
+			'Azerbaijani': 'az',
+			'Belarusian': 'be',
+			'Bosnian': 'bs',
+			'Bulgarian': 'bg',
+			'Catalan': 'ca',
+			'Chinese': 'zh',
+			'Chinese (Simplified)': 'zh-CN',
+			'Chinese (Traditional)': 'zh-TW',
+			'Czech': 'cs',
+			'Dutch': 'nl',
+			'Finnish': 'fi',
+			'French': 'fr',
+			'German': 'de',
+			'Hungarian': 'hu',
+			'Indonesian': 'id',
+			'Italian': 'it',
+			'Japanese': 'ja',
+			'Kazakh': 'kk',
+			'Korean': 'ko',
+			'Persian': 'fa',
+			'Polish': 'pl',
+			'Portuguese': 'pt',
+			'Portuguese (Brazil)': 'pt-BR',
+			'Portuguese (Portugal)': 'pt-PT',
+			'Romanian': 'ro',
+			'Russian': 'ru',
+			'Serbian': 'sr',
+			'Slovak': 'sk',
+			'Spanish': 'es',
+			'Swedish': 'sv',
+			'Turkish': 'tr',
+			'Ukrainian': 'uk',
+	}
+
+	new_name = None
+
+	for lname, lcode in ldict.items():
+		if name.lower () == lname.lower ():
+			new_name = lcode
+			break
+
+	if not new_name:
+		log_status (status.WARNING, 'Locale name was not found: "' + name + '"')
+		new_name = name
+
+	return new_name
+
 parser = argparse.ArgumentParser (add_help=False, description='Build project locale.')
 parser.add_argument ('--name-short', help='project short name', required=True)
 
@@ -210,6 +260,8 @@ for name in i18n_files:
 
 	locale_name = os.path.splitext (name)[0]
 	locale_path = os.path.join (I18N_DIRECTORY, name)
+	locale_sname = locale_name
+	#locale_sname = get_locale_name (locale_name)
 
 	try:
 		ini_file = open (locale_path, mode='r', encoding='utf-16')
@@ -236,7 +288,7 @@ for name in i18n_files:
 
 		# Write locale header
 		locale_content += locale_desc + '[' + locale_name + ']\n'
-		lng_content += locale_desc + '[' + locale_name + ']\n'
+		lng_content += locale_desc + '[' + locale_sname + ']\n'
 
 		# Write locale timestamp
 		if locale_name.lower () == 'russian':
@@ -314,7 +366,8 @@ else:
 	log_status (status.SUCCESS, 'Write locale "' + get_file_name (LOCALE_FILE) + '"')
 
 # Copy localization to binaries folders
-file_copy (LOCALE_FILE, os.path.join (PROJECT_DIRECTORY, 'bin', '32', os.path.basename (LOCALE_FILE)))
-file_copy (LOCALE_FILE, os.path.join (PROJECT_DIRECTORY, 'bin', '64', os.path.basename (LOCALE_FILE)))
+file_copy (LOCALE_FILE, os.path.join (PROJECT_DIRECTORY, 'bin', '32', os.path.basename (LOCALE_FILE)), made_dir=False)
+file_copy (LOCALE_FILE, os.path.join (PROJECT_DIRECTORY, 'bin', '64', os.path.basename (LOCALE_FILE)), made_dir=False)
+file_copy (LOCALE_FILE, os.path.join (PROJECT_DIRECTORY, 'bin', 'ARM64', os.path.basename (LOCALE_FILE)), made_dir=False)
 
 print ('\nLocale timestamp: ' + str (locale_timestamp) + ' (' + locale_lastname + ').')
