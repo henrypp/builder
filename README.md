@@ -9,6 +9,7 @@
 - Python 3.x
 - 7-Zip (used from `%path%`)
 - NSIS (used from `%path%`)
+- GPG (used from `%path%`)
 
 ### How to update localization:
 - Sync one of my project `git@github.com:henrypp/simplewall.git`
