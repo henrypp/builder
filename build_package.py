@@ -280,7 +280,7 @@ if binary_hash_64:
 	hash_string += '#64-bit\n' + binary_hash_64
 
 if binary_hash_arm64:
-	hash_string += '#arm64-bit\n' + binary_hash_arm64
+	hash_string += '#arm64\n' + binary_hash_arm64
 
 if hash_string:
 	file_create (CHECKSUM_FILE, hash_string)
