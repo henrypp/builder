@@ -16,8 +16,7 @@ Unicode true
 
 ; Defines
 !define APP_AUTHOR "Henry++"
-!define APP_WEBSITE_HOST "www.henrypp.org"
-!define APP_WEBSITE "https://${APP_WEBSITE_HOST}"
+!define APP_WEBSITE "https://www.henrypp.org"
 
 !define COPYRIGHT "(c) ${APP_AUTHOR}. All rights reversed."
 !define LICENSE_FILE "${APP_FILES_DIR}\64\License.txt"
@@ -36,6 +35,7 @@ Unicode true
 !define MUI_FINISHPAGE_SHOWREADME
 !define MUI_FINISHPAGE_SHOWREADME_TEXT "Show release notes"
 !define MUI_FINISHPAGE_SHOWREADME_FUNCTION ShowReleaseNotes
+!define MUI_FINISHPAGE_SHOWREADME_NOTCHECKED
 
 !define MUI_FINISHPAGE_NOREBOOTSUPPORT
 
@@ -79,6 +79,80 @@ InstallDirRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP
 ;OutFile "${APP_NAME_SHORT}-${APP_VERSION}-setup.exe"
 RequestExecutionLevel admin
 
+!macro CloseInstances
+	SetPluginUnload alwaysoff
+
+	System::Call 'kernel32::OpenMutex(i 0x100000, i 0, t "${APP_NAME_SHORT}") p.R0'
+	IntPtrCmp $R0 0 skip
+		System::Call 'kernel32::CloseHandle(p $R0)'
+
+		IfSilent 0 +1
+		Sleep 4000
+
+		System::Get "(p.R1, i) iss"
+		Pop $R0
+		System::Call "user32::EnumWindows(k R0, i) i.s"
+
+		loop:
+			Pop $0
+			StrCmp $0 "callback1" 0 done
+
+			System::Call 'user32::GetProp(p R1, t "${APP_NAME}") p.R2'
+
+			IntPtrCmp $R2 0 notfound
+
+			System::Call 'user32::GetWindowThreadProcessId(p R1, *i.R3)'
+
+			# PROCESS_TERMINATE 0x0001
+			# PROCESS_QUERY_LIMITED_INFORMATION 0x1000
+
+			System::Call 'kernel32::OpenProcess(i 0x1001, i 0, i R3) p.R4'
+
+			IntPtrCmp $R4 0 notfound
+
+			System::Call 'psapi::GetModuleFileNameEx(p R4, i 0, t.R6, i ${NSIS_MAX_STRLEN}) i.R7'
+
+			IntCmp $R7 0 cleanup
+			StrCmp $R6 "$INSTDIR\${APP_NAME_SHORT}.exe" 0 cleanup
+
+			# WM_QUIT 0x0012
+			# SMTO_BLOCK = 0x0001
+
+			System::Call 'user32::SendMessageTimeout(p R1, i 0x0012, i 0, i 0, i 0x0001, i 5000, i 0)'
+			Sleep 1000
+
+			System::Call 'kernel32::TerminateProcess(p R4, i 0)'
+			Sleep 1000
+
+			cleanup:
+
+			System::Call 'kernel32::CloseHandle(p R4)'
+
+			Push 0
+			System::Call "$R0"
+
+			Goto loop
+
+			notfound:
+
+			Push 1
+			System::Call "$R0"
+
+			Goto loop
+
+			System::Call "$R0"
+
+			Goto loop
+		done:
+
+		System::Free $R0
+	skip:
+
+	SetPluginUnload manual
+!macroend
+
+!define CloseInstances "${CallArtificialFunction} CloseInstances"
+
 Function .onInit
 	${If} ${RunningX64}
 		SetRegView 64
@@ -119,6 +193,10 @@ Section "!${APP_NAME}"
 	SectionIn RO
 
 	SetOutPath $INSTDIR
+
+	DetailPrint "Close running instances..."
+
+	${CloseInstances}
 
 	${If} ${RunningX64}
 		File "${APP_FILES_DIR}\64\${APP_NAME_SHORT}.exe"
@@ -170,13 +248,17 @@ Section /o "Store settings in application directory (portable mode)" SecPortable
 	IfFileExists "$INSTDIR\portable.dat" portable
 	IfFileExists "$INSTDIR\${APP_NAME_SHORT}.ini" portable not_portable
 
+	Push $R0
+
 	; Create portable indicator file
 	not_portable:
-	FileOpen $0 "$INSTDIR\portable.dat" w
-	FileWrite $0 "#PORTABLE#" ; we write a new line
-	FileClose $0
+	FileOpen $R0 "$INSTDIR\portable.dat" w
+	FileWrite $R0 "#PORTABLE#" ; we write a new line
+	FileClose $R0
 
 	portable:
+
+	Pop $R0
 SectionEnd
 
 Section "Uninstall"
@@ -189,6 +271,18 @@ Section "Uninstall"
 	${If} ${APP_NAME_SHORT} == 'simplewall'
 		ExecWait '"$INSTDIR\${APP_NAME_SHORT}.exe" -uninstall'
 	${EndIf}
+
+	${CloseInstances}
+
+	; Remove shortcuts
+	RMDir /r "$SMPROGRAMS\${APP_NAME}"
+	Delete "$DESKTOP\${APP_NAME}.lnk"
+
+	; Clean registry
+	DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "${APP_NAME}"
+	DeleteRegValue HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "${APP_NAME}"
+
+	DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}"
 
 	; Remove "skipuac" entry
 	nsExec::Exec 'schtasks /delete /f /tn "${APP_NAME_SHORT}Task"'
@@ -234,22 +328,14 @@ Section "Uninstall"
 
 	Delete "$INSTDIR\Uninstall.exe"
 
-	; Remove shortcuts
-	RMDir /r "$SMPROGRAMS\${APP_NAME}"
-	Delete "$DESKTOP\${APP_NAME}.lnk"
-
-	; Clean registry
-	DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "${APP_NAME}"
-	DeleteRegValue HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "${APP_NAME}"
-
-	DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}"
-
 	RMDir "$INSTDIR"
 SectionEnd
 
 Function CreateUninstallEntry
+	Push $R0
+
 	; Check if uninstall registry key exists and update if possible
-	ReadRegStr $0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "UninstallString"
+	ReadRegStr $R0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "UninstallString"
 	IfErrors 0 write_registry
 
 	IfSilent skip
@@ -268,6 +354,8 @@ Function CreateUninstallEntry
 	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "NoRepair" 1
 
 	skip:
+
+	Pop $R0
 FunctionEnd
 
 Function RunApplication
