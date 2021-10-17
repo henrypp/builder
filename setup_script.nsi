@@ -9,10 +9,14 @@ CRCCheck force
 Unicode true
 
 ; Includes
-!include "LogicLib.nsh"
-!include "MUI2.nsh"
-!include "x64.nsh"
-!include "WinVer.nsh"
+!include 'LogicLib.nsh'
+!include 'MUI2.nsh'
+!include 'x64.nsh'
+!include 'WinVer.nsh'
+!include 'FileFunc.nsh'
+
+!insertmacro GetParameters
+!insertmacro GetOptions
 
 ; Defines
 !define APP_AUTHOR "Henry++"
@@ -158,6 +162,12 @@ Function .onInit
 		SetRegView 64
 	${EndIf}
 
+	${GetParameters} $R0
+	${GetOptionsS} $R0 '/s' $0
+	IfErrors +2 0
+	SetSilent silent
+	ClearErrors
+
 	; Windows 7 and later
 	${If} ${APP_NAME_SHORT} == 'simplewall'
 		${IfNot} ${AtLeastWin7}
@@ -172,6 +182,12 @@ Function un.onInit
 	${If} ${RunningX64}
 		SetRegView 64
 	${EndIf}
+
+	${GetParameters} $R0
+	${GetOptionsS} $R0 '/s' $0
+	IfErrors +2 0
+	SetSilent silent
+	ClearErrors
 
 	IfSilent skip
 
