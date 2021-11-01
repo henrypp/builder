@@ -73,9 +73,8 @@ PROJECT_DIRECTORY = os.path.join (CURRENT_DIRECTORY, '..', APP_NAME_SHORT)
 I18N_DIRECTORY = os.path.join (PROJECT_DIRECTORY, 'bin', 'i18n')
 EXAMPLE_DIRECTORY = os.path.join (I18N_DIRECTORY, '!example.txt')
 LOCALE_FILE = os.path.join (PROJECT_DIRECTORY, 'bin', APP_NAME_SHORT + '.lng')
+RESOURCE_RC = os.path.join (PROJECT_DIRECTORY, 'src', 'resource.rc')
 RESOURCE_H = os.path.join (PROJECT_DIRECTORY, 'src', 'resource.h')
-RESOURCE_RC = os.path.join (PROJECT_DIRECTORY, 'src', 'resource.rc')
-RESOURCE_RC = os.path.join (PROJECT_DIRECTORY, 'src', 'resource.rc')
 
 # Checking configuration
 log_status (status.TITLE, 'Checking configuration')
@@ -190,7 +189,12 @@ with open (RESOURCE_RC, 'r') as fn:
 
 			if part[0] and part[2]:
 				key = part[0].strip ('\t "')
-				val = part[2].replace ('""', '"').strip ('\t "')
+
+				start_pos = str.index (part[2], '"')
+				end_pos= str.rindex (part[2], '"')
+
+				val = part[2][start_pos:end_pos]
+				val = val.replace ('""', '"').strip ('\t "')
 
 				if key and val:
 					find_and_set (strings_array, key, val)
