@@ -83,6 +83,8 @@ InstallDirRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP
 ;OutFile "${APP_NAME_SHORT}-${APP_VERSION}-setup.exe"
 RequestExecutionLevel admin
 
+!define DEBUG `System::Call kernel32::OutputDebugString(ts)`
+
 !macro CloseInstances
 	SetPluginUnload alwaysoff
 
@@ -91,7 +93,7 @@ RequestExecutionLevel admin
 		System::Call 'kernel32::CloseHandle(p $R0)'
 
 		IfSilent 0 +1
-		Sleep 4000
+		Sleep 2000
 
 		System::Get "(p.R1, i) iss"
 		Pop $R0
@@ -122,7 +124,7 @@ RequestExecutionLevel admin
 			# WM_QUIT 0x0012
 			# SMTO_BLOCK = 0x0001
 
-			System::Call 'user32::SendMessageTimeout(p R1, i 0x0012, i 0, i 0, i 0x0001, i 5000, i 0)'
+			System::Call 'user32::SendMessageTimeout(p R1, i 0x0012, i 0, i 0, i 0x0001, i 4000, i 0)'
 			Sleep 1000
 
 			System::Call 'kernel32::TerminateProcess(p R4, i 0)'
@@ -167,6 +169,17 @@ Function .onInit
 	IfErrors +2 0
 	SetSilent silent
 	ClearErrors
+
+	; Check if we are updating current configuration, then check executable existing.
+	IfSilent 0 not_update
+	${GetParameters} $R0
+	${GetOptionsS} $R0 '/u' $0
+	IfErrors +3 0
+	IfFileExists "$INSTDIR\${APP_NAME_SHORT}.exe" +1 0
+	Abort
+	ClearErrors
+
+	not_update:
 
 	; Windows 7 and later
 	${If} ${APP_NAME_SHORT} == 'simplewall'
@@ -230,6 +243,9 @@ Section "!${APP_NAME}"
 
 	; Create uninstall entry
 	Call CreateUninstallEntry
+
+	IfSilent 0 +1
+	Call RunApplication
 SectionEnd
 
 Section "Localization"
@@ -375,13 +391,9 @@ Function CreateUninstallEntry
 FunctionEnd
 
 Function RunApplication
-	IfSilent skip
-
 	${If} ${FileExists} $INSTDIR\${APP_NAME_SHORT}.exe
 		Exec '"$INSTDIR\${APP_NAME_SHORT}.exe"'
 	${EndIf}
-
-	skip:
 FunctionEnd
 
 Function ShowReleaseNotes
