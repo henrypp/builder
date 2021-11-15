@@ -1,10 +1,15 @@
 import glob
 import hashlib
 import logging
+import math
 import os
 import time
 import platform
+import re
 import shutil
+
+import ctypes
+from ctypes import wintypes
 
 class status:
 	TITLE  = 'xx'
@@ -14,6 +19,17 @@ class status:
 	BLUE  = '\033[34m' # blue
 	PURPLE  = '\033[35m' # purple
 	WHITE  = '\033[0m'  # white (normal)
+
+COMPRESS_FORMAT = {
+	"COMPRESSION_FORMAT_LZNT1" : ctypes.c_uint16 (2),
+	"COMPRESSION_FORMAT_XPRESS" : ctypes.c_uint16 (3),
+	"COMPRESSION_FORMAT_XPRESS_HUFF" : ctypes.c_uint16 (4)
+	}
+
+COMPRESS_ENGINE = {
+	"COMPRESSION_ENGINE_STANDARD" : ctypes.c_uint16 (0),
+	"COMPRESSION_ENGINE_MAXIMUM" : ctypes.c_uint16 (256)
+	}
 
 def is_os_64bit ():
 	return platform.machine ().endswith ('64')
@@ -52,6 +68,107 @@ def check_path_with_status (title, path, is_file=False):
 	else:
 		log_status (status.FAILED, title + ' "' + get_file_name (path) + '" was not found')
 		os.sys.exit ('')
+
+def natural_sort (list, key=lambda s:s):
+	def get_alphanum_key_func (key):
+		convert = lambda text: int (text) if text.isdigit () else text
+		return lambda s: [convert (c) for c in re.split ('([0-9]+)', key (s))]
+
+	list.sort (key=get_alphanum_key_func (key))
+
+def human_readable_size (size, decimal_places=2):
+	for unit in ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB']:
+		if size < 1024.0 or unit == 'PiB':
+			break
+		size /= 1024.0
+
+	return f"{size:.{decimal_places}f} {unit}"
+
+def pack_buffer_lznt (buffer_data, buffer_length):
+	format_and_engine = wintypes.USHORT (COMPRESS_FORMAT["COMPRESSION_FORMAT_LZNT1"].value | COMPRESS_ENGINE["COMPRESSION_ENGINE_MAXIMUM"].value)
+
+	workspace_buffer_size = wintypes.ULONG()
+	workspace_fragment_size = wintypes.ULONG()
+
+	# RtlGetCompressionWorkSpaceSize
+	ctypes.windll.ntdll.RtlGetCompressionWorkSpaceSize.restype = wintypes.LONG
+	ctypes.windll.ntdll.RtlGetCompressionWorkSpaceSize.argtypes = (
+		wintypes.USHORT,
+		wintypes.PULONG,
+		wintypes.PULONG
+	)
+
+	status = ctypes.windll.ntdll.RtlGetCompressionWorkSpaceSize (
+		format_and_engine,
+		ctypes.byref(workspace_buffer_size),
+		ctypes.byref(workspace_fragment_size)
+	)
+
+	if status != 0:
+		log_status (status.FAILED, 'RtlGetCompressionWorkSpaceSize failed: 0x{0:X} {0:d} ({1:s})'.format (status, ctypes.FormatError(status)))
+		return None, 0
+
+	# Allocate memory
+	compressed_buffer = ctypes.create_string_buffer (buffer_length)
+	compressed_length = wintypes.ULONG()
+
+	workspace = ctypes.create_string_buffer (workspace_fragment_size.value)
+
+	# RtlCompressBuffer
+	ctypes.windll.ntdll.RtlCompressBuffer.restype = wintypes.LONG
+	ctypes.windll.ntdll.RtlCompressBuffer.argtypes = (
+		wintypes.USHORT,
+		wintypes.LPVOID,
+		wintypes.ULONG,
+		wintypes.LPVOID,
+		wintypes.ULONG,
+		wintypes.ULONG,
+		wintypes.PULONG,
+		wintypes.LPVOID
+	)
+
+	status = ctypes.windll.ntdll.RtlCompressBuffer (
+		format_and_engine,
+		ctypes.addressof (buffer_data),
+		ctypes.sizeof (buffer_data),
+		ctypes.addressof (compressed_buffer),
+		ctypes.sizeof (compressed_buffer),
+		wintypes.ULONG (4096),
+		ctypes.byref (compressed_length),
+		ctypes.addressof (workspace)
+	)
+
+	if status != 0:
+		log_status (status.FAILED, 'RtlCompressBuffer failed: 0x{0:X} {0:d} ({1:s})'.format (status, ctypes.FormatError(status)))
+		return None, 0
+
+	return compressed_buffer, compressed_length
+
+def pack_file_lznt (file_o, file_s):
+	with open (file_o, 'rb') as fn:
+		data = fn.read ()
+		fn.close ()
+
+		if not data:
+			log_status (status.WARNING, 'File is empty: "' + get_file_name (file_o) + '"')
+
+		else:
+			buffer_length = len (data)
+			buffer_data = (buffer_length * ctypes.c_ubyte).from_buffer_copy (data)
+
+			compressed_buffer, compressed_size = pack_buffer_lznt (buffer_data, buffer_length)
+
+			if compressed_buffer != None and compressed_size.value != 0:
+				log_status (status.SUCCESS, 'Compress "%s" with %s size to %s (%s saved)...' % (get_file_name (file_o), human_readable_size (buffer_length), human_readable_size (compressed_size.value), human_readable_size (buffer_length - compressed_size.value)))
+
+				with open (file_s, 'wb') as fn_pack:
+					write_buffer = (compressed_size.value * ctypes.c_ubyte).from_buffer_copy (compressed_buffer)
+
+					fn_pack.write (write_buffer)
+					fn_pack.close ()
+
+			else:
+				log_status (status.FAILED, 'Compression %s failed' % (get_file_name (file_o)))
 
 def get_file_name (path):
 	dir_name = os.path.basename (os.path.dirname (path))
