@@ -103,9 +103,9 @@ if data:
 		fn.write (data)
 		fn.close ()
 
-print ('\r')
-
 # Compress file
-pack_file_lznt (RULES_FILE, RULES_FILE_PACKED)
+log_status (status.TITLE, 'Compress blocklist with LZNT1')
+
+compress_file_lznt (RULES_FILE, RULES_FILE_PACKED)
 
 print ('\nBlocklist rules count: %s\nBlocklist timetamp: %s\n' % (str (total_rules_count), str (timestamp)))
