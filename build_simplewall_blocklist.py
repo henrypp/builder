@@ -69,7 +69,7 @@ for file_name in os.listdir (RULES_DIR):
 		natural_sort (rows)
 		f.close ()
 
-		rules_count = 0
+		count = 0
 
 		for string in rows:
 			line = string.strip ("\n\r\t ")
@@ -77,9 +77,7 @@ for file_name in os.listdir (RULES_DIR):
 			if not line or line.startswith ('#') or line.startswith ('<') or line.startswith ('>') or line.startswith ('='):
 				continue
 
-			rules_count += 1
-
-			log_status (status.SUCCESS, '%i) %s_%s ' % (rules_count, module_name, line))
+			count += 1
 
 			new_item = xml_doc.createElement ('item')
 
@@ -88,7 +86,9 @@ for file_name in os.listdir (RULES_DIR):
 
 			xml_section[0].appendChild (new_item)
 
-		total_rules_count += rules_count
+		log_status (status.SUCCESS, 'Found %i %s rules...' % (count, module_name))
+
+		total_rules_count += count
 
 # Set new rule timestamp
 xml_root[0].setAttribute ('timestamp', str (timestamp))
@@ -103,7 +103,7 @@ if data:
 		fn.write (data)
 		fn.close ()
 
-print ('\n')
+print ('\r')
 
 # Compress file
 pack_file_lznt (RULES_FILE, RULES_FILE_PACKED)
