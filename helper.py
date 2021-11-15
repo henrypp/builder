@@ -144,7 +144,22 @@ def pack_buffer_lznt (buffer_data, buffer_length):
 
 	return compressed_buffer, compressed_length
 
-def pack_file_lznt (file_o, file_s):
+def compress_buffer_to_file_lznt (buffer_data, buffer_length, path):
+	compressed_buffer, compressed_size = pack_buffer_lznt (buffer_data, buffer_length)
+
+	if compressed_buffer != None and compressed_size.value != 0:
+		log_status (status.SUCCESS, 'Compress buffer with %s size to %s (%s saved)...' % (human_readable_size (buffer_length), human_readable_size (compressed_size.value), human_readable_size (buffer_length - compressed_size.value)))
+
+		with open (path, 'wb') as fn:
+			compressed_data = (compressed_size.value * ctypes.c_ubyte).from_buffer_copy (compressed_buffer)
+
+			fn.write (compressed_data)
+			fn.close ()
+
+	else:
+		log_status (status.FAILED, 'Compression failed...')
+
+def compress_file_lznt (file_o, file_s):
 	with open (file_o, 'rb') as fn:
 		data = fn.read ()
 		fn.close ()
@@ -156,19 +171,7 @@ def pack_file_lznt (file_o, file_s):
 			buffer_length = len (data)
 			buffer_data = (buffer_length * ctypes.c_ubyte).from_buffer_copy (data)
 
-			compressed_buffer, compressed_size = pack_buffer_lznt (buffer_data, buffer_length)
-
-			if compressed_buffer != None and compressed_size.value != 0:
-				log_status (status.SUCCESS, 'Compress "%s" with %s size to %s (%s saved)...' % (get_file_name (file_o), human_readable_size (buffer_length), human_readable_size (compressed_size.value), human_readable_size (buffer_length - compressed_size.value)))
-
-				with open (file_s, 'wb') as fn_pack:
-					write_buffer = (compressed_size.value * ctypes.c_ubyte).from_buffer_copy (compressed_buffer)
-
-					fn_pack.write (write_buffer)
-					fn_pack.close ()
-
-			else:
-				log_status (status.FAILED, 'Compression %s failed' % (get_file_name (file_o)))
+			compress_buffer_to_file_lznt (buffer_data, buffer_length, file_s)
 
 def get_file_name (path):
 	dir_name = os.path.basename (os.path.dirname (path))
