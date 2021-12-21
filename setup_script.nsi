@@ -369,9 +369,8 @@ Function CreateUninstallEntry
 	; Check if uninstall registry key exists and update if possible
 	ReadRegStr $R0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "UninstallString"
 	IfErrors 0 write_registry
-
-	IfSilent skip
-
+	
+	; Don't skip on silent here, because otherwise windows won't recognize that the app is actually installed
 	write_registry:
 	WriteRegExpandStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "InstallLocation" '"$INSTDIR"'
 	WriteRegExpandStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "UninstallString" '"$INSTDIR\uninstall.exe"'
@@ -384,8 +383,6 @@ Function CreateUninstallEntry
 
 	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "NoModify" 1
 	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "NoRepair" 1
-
-	skip:
 
 	Pop $R0
 FunctionEnd
