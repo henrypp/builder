@@ -164,22 +164,30 @@ Function .onInit
 		SetRegView 64
 	${EndIf}
 
+	Push $R0
+
 	${GetParameters} $R0
 	${GetOptionsS} $R0 '/s' $0
 	IfErrors +2 0
 	SetSilent silent
 	ClearErrors
 
+	Pop $R0
+
 	; Check if we are updating current configuration, then check executable existing.
+	Push $R1
+
 	IfSilent 0 not_update
-	${GetParameters} $R0
-	${GetOptionsS} $R0 '/u' $0
+	${GetParameters} $R1
+	${GetOptionsS} $R1 '/u' $0
 	IfErrors +3 0
 	IfFileExists "$INSTDIR\${APP_NAME_SHORT}.exe" +1 0
 	Abort
 	ClearErrors
 
 	not_update:
+
+	Pop $R1
 
 	; Windows 7 and later
 	${If} ${APP_NAME_SHORT} == 'simplewall'
@@ -196,11 +204,15 @@ Function un.onInit
 		SetRegView 64
 	${EndIf}
 
+	Push $R0
+
 	${GetParameters} $R0
 	${GetOptionsS} $R0 '/s' $0
 	IfErrors +2 0
 	SetSilent silent
 	ClearErrors
+
+	Pop $R0
 
 	IfSilent skip
 
@@ -244,8 +256,15 @@ Section "!${APP_NAME}"
 	; Create uninstall entry
 	Call CreateUninstallEntry
 
-	IfSilent 0 +1
+	Push $R0
+
+	${GetParameters} $R0
+	${GetOptionsS} $R0 '/u' $0
+
+	IfErrors +1
 	Call RunApplication
+
+	Pop $R0
 SectionEnd
 
 Section "Localization"
