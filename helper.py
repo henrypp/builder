@@ -21,14 +21,14 @@ class status:
 	WHITE  = '\033[0m'  # white (normal)
 
 COMPRESS_FORMAT = {
-	"COMPRESSION_FORMAT_LZNT1" : ctypes.c_uint16 (2),
-	"COMPRESSION_FORMAT_XPRESS" : ctypes.c_uint16 (3),
-	"COMPRESSION_FORMAT_XPRESS_HUFF" : ctypes.c_uint16 (4)
+	'COMPRESSION_FORMAT_LZNT1' : ctypes.c_uint16 (2),
+	'COMPRESSION_FORMAT_XPRESS' : ctypes.c_uint16 (3),
+	'COMPRESSION_FORMAT_XPRESS_HUFF' : ctypes.c_uint16 (4)
 	}
 
 COMPRESS_ENGINE = {
-	"COMPRESSION_ENGINE_STANDARD" : ctypes.c_uint16 (0),
-	"COMPRESSION_ENGINE_MAXIMUM" : ctypes.c_uint16 (256)
+	'COMPRESSION_ENGINE_STANDARD' : ctypes.c_uint16 (0),
+	'COMPRESSION_ENGINE_MAXIMUM' : ctypes.c_uint16 (256)
 	}
 
 def is_os_64bit ():
@@ -76,7 +76,7 @@ def natural_sort (list, key=lambda s:s):
 
 	list.sort (key=get_alphanum_key_func (key))
 
-def human_readable_size (size, decimal_places=2):
+def format_size (size, decimal_places=2):
 	for unit in ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB']:
 		if size < 1024.0 or unit == 'PiB':
 			break
@@ -84,11 +84,11 @@ def human_readable_size (size, decimal_places=2):
 
 	return f"{size:.{decimal_places}f} {unit}"
 
-def pack_buffer_lznt (buffer_data, buffer_length):
-	format_and_engine = wintypes.USHORT (COMPRESS_FORMAT["COMPRESSION_FORMAT_LZNT1"].value | COMPRESS_ENGINE["COMPRESSION_ENGINE_MAXIMUM"].value)
+def pack_buffer_lznt (buffer_data):
+	format_and_engine = wintypes.USHORT (COMPRESS_FORMAT['COMPRESSION_FORMAT_LZNT1'].value | COMPRESS_ENGINE['COMPRESSION_ENGINE_MAXIMUM'].value)
 
-	workspace_buffer_size = wintypes.ULONG()
-	workspace_fragment_size = wintypes.ULONG()
+	workspace_buffer_size = wintypes.ULONG ()
+	workspace_fragment_size = wintypes.ULONG ()
 
 	# RtlGetCompressionWorkSpaceSize
 	ctypes.windll.ntdll.RtlGetCompressionWorkSpaceSize.restype = wintypes.LONG
@@ -98,19 +98,19 @@ def pack_buffer_lznt (buffer_data, buffer_length):
 		wintypes.PULONG
 	)
 
-	status = ctypes.windll.ntdll.RtlGetCompressionWorkSpaceSize (
+	result = ctypes.windll.ntdll.RtlGetCompressionWorkSpaceSize (
 		format_and_engine,
 		ctypes.byref(workspace_buffer_size),
 		ctypes.byref(workspace_fragment_size)
 	)
 
-	if status != 0:
-		log_status (status.FAILED, 'RtlGetCompressionWorkSpaceSize failed: 0x{0:X} {0:d} ({1:s})'.format (status, ctypes.FormatError(status)))
-		return None, 0
+	if result != 0:
+		log_status (status.FAILED, 'RtlGetCompressionWorkSpaceSize failed: 0x{0:X} {0:d} ({1:s})'.format (result, ctypes.FormatError (result)))
+		return None
 
 	# Allocate memory
-	compressed_buffer = ctypes.create_string_buffer (buffer_length)
-	compressed_length = wintypes.ULONG()
+	compressed_buffer = ctypes.create_string_buffer (len (buffer_data))
+	compressed_length = wintypes.ULONG ()
 
 	workspace = ctypes.create_string_buffer (workspace_fragment_size.value)
 
@@ -127,7 +127,7 @@ def pack_buffer_lznt (buffer_data, buffer_length):
 		wintypes.LPVOID
 	)
 
-	status = ctypes.windll.ntdll.RtlCompressBuffer (
+	result = ctypes.windll.ntdll.RtlCompressBuffer (
 		format_and_engine,
 		ctypes.addressof (buffer_data),
 		ctypes.sizeof (buffer_data),
@@ -138,26 +138,61 @@ def pack_buffer_lznt (buffer_data, buffer_length):
 		ctypes.addressof (workspace)
 	)
 
-	if status != 0:
-		log_status (status.FAILED, 'RtlCompressBuffer failed: 0x{0:X} {0:d} ({1:s})'.format (status, ctypes.FormatError(status)))
-		return None, 0
+	if result != 0:
+		log_status (status.FAILED, 'RtlCompressBuffer failed: 0x{0:X} {0:d} ({1:s})'.format (result, ctypes.FormatError (result)))
+		return None
 
-	return compressed_buffer, compressed_length
+	buffer = (compressed_length.value * ctypes.c_ubyte).from_buffer_copy (compressed_buffer)
 
-def compress_buffer_to_file_lznt (buffer_data, buffer_length, path):
-	compressed_buffer, compressed_size = pack_buffer_lznt (buffer_data, buffer_length)
+	return buffer
 
-	if compressed_buffer != None and compressed_size.value != 0:
-		log_status (status.SUCCESS, 'Compress buffer with %s size to %s (%s saved)...' % (human_readable_size (buffer_length), human_readable_size (compressed_size.value), human_readable_size (buffer_length - compressed_size.value)))
+def unpack_buffer_lznt (buffer_data):
+	format_and_engine = wintypes.USHORT (COMPRESS_FORMAT['COMPRESSION_FORMAT_LZNT1'].value)
 
-		with open (path, 'wb') as fn:
-			compressed_data = (compressed_size.value * ctypes.c_ubyte).from_buffer_copy (compressed_buffer)
+	# Allocate memory
+	uncompressed_buffer = ctypes.create_string_buffer (len (buffer_data) * 8)
+	uncompressed_length = wintypes.ULONG ()
 
-			fn.write (compressed_data)
-			fn.close ()
+	# RtlDecompressBuffer
+	ctypes.windll.ntdll.RtlDecompressBuffer.restype = wintypes.LONG
+	ctypes.windll.ntdll.RtlDecompressBuffer.argtypes = (
+		wintypes.USHORT,
+		wintypes.LPVOID,
+		wintypes.ULONG,
+		wintypes.LPVOID,
+		wintypes.ULONG,
+		wintypes.PULONG
+	)
 
-	else:
+	result = ctypes.windll.ntdll.RtlDecompressBuffer (
+		format_and_engine,
+		ctypes.addressof (uncompressed_buffer),
+		ctypes.sizeof (uncompressed_buffer),
+		ctypes.addressof (buffer_data),
+		ctypes.sizeof (buffer_data),
+		ctypes.byref (uncompressed_length)
+	)
+
+	if result != 0:
+		log_status (status.FAILED, 'RtlDecompressBuffer failed: 0x{0:X} {0:d} ({1:s})'.format (result, ctypes.FormatError (result)))
+		return None
+
+	buffer = (uncompressed_length.value * ctypes.c_ubyte).from_buffer_copy (uncompressed_buffer)
+
+	return buffer
+
+def compress_buffer_to_file_lznt (buffer_data, buffer_length, file):
+	buffer = pack_buffer_lznt (buffer_data)
+
+	if buffer == None:
 		log_status (status.FAILED, 'Compression failed...')
+		return
+
+	log_status (status.SUCCESS, 'Compress buffer with %s size to %s (%s saved)...' % (format_size (buffer_length), format_size (len (buffer)), format_size (buffer_length - len (buffer))))
+
+	with open (file, 'wb') as fn:
+		fn.write (buffer)
+		fn.close ()
 
 def compress_file_lznt (file_o, file_s):
 	with open (file_o, 'rb') as fn:
