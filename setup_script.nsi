@@ -166,11 +166,11 @@ Function .onInit
 
 	Push $R0
 
+	ClearErrors
 	${GetParameters} $R0
-	${GetOptionsS} $R0 '/s' $0
+	${GetOptions} $R0 '/s' $0
 	IfErrors +2 0
 	SetSilent silent
-	ClearErrors
 
 	Pop $R0
 
@@ -178,15 +178,19 @@ Function .onInit
 	Push $R1
 
 	IfSilent 0 not_update
+	ClearErrors
+	${DEBUG} $INSTDIR
+
 	${GetParameters} $R1
-	${GetOptionsS} $R1 '/u' $0
+	${GetOptions} $R1 '/u' $0
 	IfErrors +3 0
-	IfFileExists "$INSTDIR\${APP_NAME_SHORT}.exe" +1 0
+	IfFileExists "$INSTDIR\${APP_NAME_SHORT}.exe" update 0
 	Abort
+
+	update:
 	ClearErrors
 
 	not_update:
-
 	Pop $R1
 
 	; Windows 7 and later
@@ -319,21 +323,21 @@ Section "Uninstall"
 		Abort
 	installed:
 
+	${CloseInstances}
+
 	${If} ${APP_NAME_SHORT} == 'simplewall'
 		ExecWait '"$INSTDIR\${APP_NAME_SHORT}.exe" -uninstall'
 	${EndIf}
-
-	${CloseInstances}
 
 	; Remove shortcuts
 	RMDir /r "$SMPROGRAMS\${APP_NAME}"
 	Delete "$DESKTOP\${APP_NAME}.lnk"
 
 	; Clean registry
+	DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}"
+
 	DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "${APP_NAME}"
 	DeleteRegValue HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "${APP_NAME}"
-
-	DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}"
 
 	; Remove "skipuac" entry
 	nsExec::Exec 'schtasks /delete /f /tn "${APP_NAME_SHORT}Task"'
@@ -351,7 +355,9 @@ Section "Uninstall"
 
 	portable:
 
-	; Remove plugins (if exists)
+	; Remove internal directories
+	RMDir /r "$INSTDIR\cache"
+	RMDir /r "$INSTDIR\crashdump"
 	RMDir /r "$INSTDIR\plugins"
 
 	; Remove install directory
