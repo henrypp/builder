@@ -166,23 +166,17 @@ Function .onInit
 
 	Push $R0
 
-	ClearErrors
 	${GetParameters} $R0
+
 	${GetOptions} $R0 '/s' $0
 	IfErrors +2 0
 	SetSilent silent
 
-	Pop $R0
-
 	; Check if we are updating current configuration, then check executable existing.
-	Push $R1
-
 	IfSilent 0 not_update
 	ClearErrors
-	${DEBUG} $INSTDIR
 
-	${GetParameters} $R1
-	${GetOptions} $R1 '/u' $0
+	${GetOptions} $R0 '/u' $0
 	IfErrors +3 0
 	IfFileExists "$INSTDIR\${APP_NAME_SHORT}.exe" update 0
 	Abort
@@ -191,7 +185,7 @@ Function .onInit
 	ClearErrors
 
 	not_update:
-	Pop $R1
+	Pop $R0
 
 	; Windows 7 and later
 	${If} ${APP_NAME_SHORT} == 'simplewall'
@@ -211,7 +205,7 @@ Function un.onInit
 	Push $R0
 
 	${GetParameters} $R0
-	${GetOptionsS} $R0 '/s' $0
+	${GetOptions} $R0 '/s' $0
 	IfErrors +2 0
 	SetSilent silent
 	ClearErrors
@@ -263,7 +257,7 @@ Section "!${APP_NAME}"
 	Push $R0
 
 	${GetParameters} $R0
-	${GetOptionsS} $R0 '/u' $0
+	${GetOptions} $R0 '/u' $0
 
 	IfErrors +1
 	Call RunApplication
@@ -389,15 +383,6 @@ Section "Uninstall"
 SectionEnd
 
 Function CreateUninstallEntry
-	Push $R0
-
-	; Check if uninstall registry key exists and update if possible
-	ReadRegStr $R0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "UninstallString"
-	IfErrors 0 write_registry
-
-	IfSilent skip
-
-	write_registry:
 	WriteRegExpandStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "InstallLocation" '"$INSTDIR"'
 	WriteRegExpandStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "UninstallString" '"$INSTDIR\uninstall.exe"'
 
@@ -409,10 +394,6 @@ Function CreateUninstallEntry
 
 	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "NoModify" 1
 	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "NoRepair" 1
-
-	skip:
-
-	Pop $R0
 FunctionEnd
 
 Function RunApplication
