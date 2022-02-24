@@ -1,9 +1,9 @@
 @echo off
 
 if [%1]==[] (
-	echo Usage: build_simplewall_blocklist.bat app_name_short
+	echo Usage: build_simplewall_blocklist.bat file_path
 	pause
 	exit
 )
 
-python ./build_simplewall_blocklist.py --name-short=%1
+python ./src/build_simplewall_rules.py --mode=update --i=%1 --o=%1

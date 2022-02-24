@@ -6,4 +6,4 @@ if [%1]==[] (
 	exit
 )
 
-python ./build_package.py --name-short=%1 --version=%2 --name=%3
+python ./src/build_package.py --name-short=%1 --version=%2 --name=%3

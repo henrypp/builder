@@ -6,4 +6,4 @@ if [%1]==[] (
 	exit
 )
 
-python ./build_locale.py --name-short=%1
+python ./src/build_locale.py --name-short=%1
