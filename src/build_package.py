@@ -54,8 +54,8 @@ if os.path.isfile (os.path.join (CURRENT_DIRECTORY, '.gitattributes')):
 if os.path.isfile (os.path.join (CURRENT_DIRECTORY, '.gitignore')):
 	file_copy (os.path.join (CURRENT_DIRECTORY, '.gitignore'), os.path.join (PROJECT_DIRECTORY, '.gitignore'))
 
-if os.path.isfile (os.path.join (CURRENT_DIRECTORY, '.gitmodules')):
-	file_copy (os.path.join (CURRENT_DIRECTORY, '.gitmodules'), os.path.join (PROJECT_DIRECTORY, '.gitmodules'))
+#if os.path.isfile (os.path.join (CURRENT_DIRECTORY, '.gitmodules')):
+#	file_copy (os.path.join (CURRENT_DIRECTORY, '.gitmodules'), os.path.join (PROJECT_DIRECTORY, '.gitmodules'))
 
 if os.path.isfile (os.path.join (BIN_DIRECTORY, 'History.txt')):
 	file_copy (os.path.join (BIN_DIRECTORY, 'History.txt'), os.path.join (PROJECT_DIRECTORY, 'CHANGELOG.md'))
