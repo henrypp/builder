@@ -177,7 +177,7 @@ Function .onInit
 	ClearErrors
 
 	${GetOptions} $R0 '/u' $0
-	IfErrors +3 0
+	IfErrors update 0
 	IfFileExists "$INSTDIR\${APP_NAME_SHORT}.exe" update 0
 	Abort
 
@@ -212,20 +212,14 @@ Function un.onInit
 
 	Pop $R0
 
-	IfSilent skip
-
-	MessageBox MB_YESNO|MB_ICONEXCLAMATION|MB_DEFBUTTON2 'Are you sure you want to uninstall ${APP_NAME}?' IDYES +1
+	MessageBox MB_YESNO|MB_ICONEXCLAMATION|MB_DEFBUTTON2 'Are you sure you want to uninstall ${APP_NAME}?' IDYES skip
 	Abort
 
 	skip:
 FunctionEnd
 
 Function un.onUninstSuccess
-	IfSilent skip
-
 	MessageBox MB_OK|MB_ICONINFORMATION '${APP_NAME} was completely removed.'
-
-	skip:
 FunctionEnd
 
 Section "!${APP_NAME}"
@@ -312,9 +306,9 @@ SectionEnd
 
 Section "Uninstall"
 	IfFileExists $INSTDIR\${APP_NAME_SHORT}.exe installed
-		IfSilent +1
-		MessageBox MB_YESNO "It does not appear that ${APP_NAME} is installed in the directory '$INSTDIR'.$\r$\nContinue anyway (not recommended)?" IDYES installed
-		Abort
+	MessageBox MB_YESNO "It does not appear that ${APP_NAME} is installed in the directory '$INSTDIR'.$\r$\nContinue anyway (not recommended)?" IDYES installed
+	Abort
+
 	installed:
 
 	${CloseInstances}
