@@ -372,9 +372,13 @@ Section "Uninstall"
 
 	${If} ${APP_NAME_SHORT} == 'simplewall'
 		Delete "$INSTDIR\profile.xml"
-		Delete "$INSTDIR\profile_internal.xml"
-
 		Delete "$INSTDIR\profile.xml.bak"
+
+		Delete "$INSTDIR\profile_internal.xml"
+		Delete "$INSTDIR\profile_internal.sp"
+
+		Delete "$INSTDIR\profile.sp"
+		Delete "$INSTDIR\profile.sp.bak"
 	${EndIf}
 
 	Delete "$INSTDIR\Uninstall.exe"
@@ -423,7 +427,7 @@ Function IsPortable
 	SectionSetFlags ${SecShortcut2} 0
 
 	Goto skip
-	
+
 	not_portable:
 	SectionSetFlags ${SecPortable} 0
 
