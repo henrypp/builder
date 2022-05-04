@@ -259,7 +259,7 @@ Section "!${APP_NAME}"
 	${GetParameters} $R0
 	${GetOptions} $R0 '/u' $0
 
-	IfErrors +1
+	IfErrors +2
 	Call RunApplication
 
 	Pop $R0
