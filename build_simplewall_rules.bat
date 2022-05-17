@@ -1,7 +1,7 @@
 @echo off
 
 if [%1]==[] (
-	echo Usage: build_simplewall_blocklist.bat file_path
+	echo Usage: build_simplewall_rules.bat file_path
 	pause
 	exit
 )
