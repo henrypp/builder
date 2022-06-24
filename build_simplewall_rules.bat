@@ -6,4 +6,4 @@ if [%1]==[] (
 	exit
 )
 
-python ./src/build_simplewall_rules.py --mode=update --i=%1 --o=%1
+python ./src/build_simplewall_rules.py --mode=%1 --i=%2 --o=%3
