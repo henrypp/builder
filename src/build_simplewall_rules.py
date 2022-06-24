@@ -5,7 +5,7 @@ import argparse
 from helper import *
 
 parser = argparse.ArgumentParser (add_help=False, description='Update internal rules.')
-parser.add_argument ('--mode', help='working mode (update - update wsb rules/unpack/pack)', required=True)
+parser.add_argument ('--mode', help='working mode (update/unpack/pack)', required=True)
 parser.add_argument ('--i', help='in file', required=True)
 parser.add_argument ('--o', help='out file', required=True)
 
@@ -26,6 +26,10 @@ PROFILE2_HASH_LENGTH = 32
 
 check_path_with_status ('Profile file', ARG_FILE_IN, True)
 check_path_with_status ('WSB directory', WSB_DIR)
+
+if ARG_MODE != 'update' and ARG_MODE != 'pack' and ARG_MODE != 'unpack':
+	log_status (status.FAILED, 'Unknown mode specified "%s"' % (ARG_MODE))
+	os.sys.exit ('')
 
 def get_hash (buffer):
 	return hashlib.sha256 (buffer).digest ()
@@ -53,7 +57,7 @@ def save_file (file_path, buffer):
 		fn.write (buffer)
 		fn.close ()
 
-def decode_profile (file_path):
+def load_profile (file_path, mode):
 	with open (file_path, 'rb') as fn:
 
 		# read file size
@@ -78,8 +82,8 @@ def decode_profile (file_path):
 
 		# read sha256 value
 		hash_value = fn.read (PROFILE2_HASH_LENGTH)
-
 		lznt_buffer = fn.read ()
+
 		fn.close ()
 
 		buffer_data = (len (lznt_buffer) * ctypes.c_ubyte).from_buffer_copy (lznt_buffer)
@@ -95,97 +99,104 @@ def decode_profile (file_path):
 
 		return buffer_data
 
-def encode_profile (file_path, hash_value, xml_buffer):
-	buffer_length = len (xml_buffer)
-	buffer_data = (buffer_length * ctypes.c_ubyte).from_buffer_copy (xml_buffer)
+def save_profile (file_path, hash_value, xml_buffer, mode):
+	if mode == 'unpack':
+		log_status (status.SUCCESS, 'Write %s size...' % (format_size (len (xml_buffer))))
 
-	buffer_data = pack_buffer_lznt (buffer_data)
+		with open (file_path, 'wb') as fn:
+			fn.write (xml_buffer)
+			fn.close ()
+	elif mode == 'update' or mode == 'pack':
+		buffer_length = len (xml_buffer)
+		buffer_data = (buffer_length * ctypes.c_ubyte).from_buffer_copy (xml_buffer)
 
-	if not buffer_data:
-		log_status (status.FAILED, 'Compression failed...')
-		return
+		buffer_data = pack_buffer_lznt (buffer_data)
 
-	log_status (status.SUCCESS, 'Compress buffer with %s size to %s (%s saved)...' % (format_size (buffer_length), format_size (len (buffer_data)), format_size (buffer_length - len (buffer_data))))
+		if not buffer_data:
+			log_status (status.FAILED, 'Compression failed...')
+			return
 
-	with open (file_path, 'wb') as fn:
-		fn.write (PROFILE2_FOURCC) # compressed profile signature
-		fn.write (hash_value) # sha256 hash of uncompressed data
+		log_status (status.SUCCESS, 'Compress buffer with %s size to %s (%s saved)...' % (format_size (buffer_length), format_size (len (buffer_data)), format_size (buffer_length - len (buffer_data))))
 
-		fn.write (buffer_data)
+		with open (file_path, 'wb') as fn:
+			fn.write (PROFILE2_FOURCC) # compressed profile signature
+			fn.write (hash_value) # sha256 hash of uncompressed data
 
-		fn.close ()
+			fn.write (buffer_data)
+
+			fn.close ()
 
 # Start parse
-buffer = decode_profile (ARG_FILE_IN)
+buffer = load_profile (ARG_FILE_IN, ARG_MODE)
 
 if not buffer:
-	raise Exception ('Unpacking failure.')
+	log_status (status.FAILED, 'Loading failure...')
+	os.sys.exit ('')
 
 buffer_hash = get_hash (buffer)
-
 buffer = bytes (buffer).decode ('utf-8')
 
 xml_doc, xml_root = parse_xml (buffer)
 
-# Store timestamp
+# Get timestamp
 timestamp = int (xml_root[0].getAttribute ('timestamp'))
-
-# Cleanup xml
-for node in xml_doc.getElementsByTagName ('rules_blocklist'):
-	parent = node.parentNode
-	parent.removeChild (node)
-
-xml_root[0].appendChild (xml_doc.createElement ('rules_blocklist'))
-xml_section = xml_doc.getElementsByTagName ('rules_blocklist')
-
-if not xml_section:
-	raise Exception ('Parse xml failure.')
-
 total_rules_count = 0
 
-# Enumerate Windows Spy Blocker spy/extra and update rules
-for file_name in os.listdir (WSB_DIR):
-	module_name = os.path.splitext (file_name)[0]
-	module_path = os.path.join (WSB_DIR, file_name)
+if ARG_MODE == 'update':
+	# Cleanup xml
+	for node in xml_doc.getElementsByTagName ('rules_blocklist'):
+		parent = node.parentNode
+		parent.removeChild (node)
 
-	log_status (status.TITLE, 'Parsing "' + module_name + '" rules')
+	xml_root[0].appendChild (xml_doc.createElement ('rules_blocklist'))
+	xml_section = xml_doc.getElementsByTagName ('rules_blocklist')
 
-	lastmod = int (os.path.getmtime (module_path))
+	if not xml_section:
+		raise Exception ('Parse xml failure.')
 
-	if lastmod > timestamp:
-		timestamp = lastmod
+	# Enumerate Windows Spy Blocker spy/extra and update rules
+	for file_name in os.listdir (WSB_DIR):
+		module_name = os.path.splitext (file_name)[0]
+		module_path = os.path.join (WSB_DIR, file_name)
 
-	with open (module_path, 'r') as fn:
-		rows = fn.readlines ()
-		natural_sort (rows)
-		fn.close ()
+		log_status (status.TITLE, 'Parsing "' + module_name + '" rules')
 
-		count = 0
+		lastmod = int (os.path.getmtime (module_path))
 
-		for string in rows:
-			line = string.strip ('\n\r\t ')
+		if lastmod > timestamp:
+			timestamp = lastmod
 
-			if not line or line.startswith ('#') or line.startswith ('<') or line.startswith ('>') or line.startswith ('='):
-				continue
+		with open (module_path, 'r') as fn:
+			rows = fn.readlines ()
+			natural_sort (rows)
+			fn.close ()
 
-			count += 1
+			count = 0
 
-			new_item = xml_doc.createElement ('item')
+			for string in rows:
+				line = string.strip ('\n\r\t ')
 
-			new_item.setAttribute ('name', module_name + '_' + line)
-			new_item.setAttribute ('rule', line)
+				if not line or line.startswith ('#') or line.startswith ('<') or line.startswith ('>') or line.startswith ('='):
+					continue
 
-			xml_section[0].appendChild (new_item)
+				count += 1
 
-		if count != 0:
-			log_status (status.SUCCESS, 'Found %i %s rules...' % (count, module_name))
-		else:
-			log_status (status.WARNING, 'Not found %s rules...' % (module_name))
+				new_item = xml_doc.createElement ('item')
 
-		total_rules_count += count
+				new_item.setAttribute ('name', module_name + '_' + line)
+				new_item.setAttribute ('rule', line)
 
-# Set new rule timestamp
-xml_root[0].setAttribute ('timestamp', str (timestamp))
+				xml_section[0].appendChild (new_item)
+
+			if count != 0:
+				log_status (status.SUCCESS, 'Found %i %s rules...' % (count, module_name))
+			else:
+				log_status (status.WARNING, 'Not found %s rules...' % (module_name))
+
+			total_rules_count += count
+
+	# Set new rule timestamp
+	xml_root[0].setAttribute ('timestamp', str (timestamp))
 
 # Generate xml string
 data = xml_doc.toprettyxml (indent='\t', newl='\n')
@@ -197,8 +208,8 @@ data = data.replace ('/>', ' />')
 data = bytes (data, 'utf-8')
 
 # Save profile file
-log_status (status.TITLE, 'Compress blocklist with LZNT1')
+log_status (status.TITLE, 'Saving file')
 
-encode_profile (ARG_FILE_OUT, buffer_hash, data)
+save_profile (ARG_FILE_OUT, buffer_hash, data, ARG_MODE)
 
 print ('\nBlocklist rules count: %s\nBlocklist timestamp: %s\n' % (str (total_rules_count), str (timestamp)))
