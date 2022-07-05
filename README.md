@@ -8,7 +8,7 @@
 
 ### System requirements:
 
-- Python 3.x
+- Python 3.7+
 - 7-Zip (used from `%path%`)
 - NSIS (used from `%path%`)
 - GPG (used from `%path%`)
