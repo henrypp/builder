@@ -4,24 +4,26 @@
 
 - Build project portable zip package.
 - Build project installation package.
-- Update localization (.lng) file from .ini files ([as example](https://github.com/henrypp/builder#how-to-update-localization)).
+- Update localization `.lng` file from `.ini` files ([as example](https://github.com/henrypp/builder#how-to-update-localization)).
 
 ### System requirements:
 
 - Python 3.7+
-- 7-Zip (used from `%path%`)
-- NSIS (used from `%path%`)
-- GPG (used from `%path%`)
+- 7-Zip 21+ (used from `%path%`)
+- GPG 2.2+ (used from `%path%`)
+- NSIS 3+ (used from `%path%`)
 
 ### How to update localization:
 
-- Sync this repository.
-- Sync one of my project (eg. `git@github.com:henrypp/simplewall.git`).
-- Open synced directory `simplewall\bin\i18n`.
-- Copy `!example.txt` into new localization filename (eg. `German.ini`) or edit any available localization file.
-- Save updated `.ini` file.
+- Sync this repository via:<br />
+`git clone https://github.com/henrypp/builder.git`.
+- Sync one of my project via:<br />
+`git clone https://github.com/henrypp/simplewall.git`.
+- Open cloned directory `simplewall\bin\i18n`.
+- Open any available `.ini` file or copy `!example.txt` into new localization filename (eg. `Russian.ini`).
+- Save modified file.
 - Run `simplewall\build_locale.bat`
-- This script was update `simplewall\bin\simplewall.lng` localization file.
+- The script was update `simplewall\bin\simplewall.lng` localization file.
 
 Website: [www.henrypp.org](https://www.henrypp.org)<br />
 Support: support@henrypp.org<br />
