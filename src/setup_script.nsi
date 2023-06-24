@@ -5,7 +5,6 @@ SetCompressorDictSize 64
 SetDatablockOptimize on
 SetDateSave off
 SetCompress force
-CRCCheck force
 Unicode true
 
 ; Includes
@@ -212,6 +211,8 @@ Function un.onInit
 
 	Pop $R0
 
+	IfSilent skip
+
 	MessageBox MB_YESNO|MB_ICONEXCLAMATION|MB_DEFBUTTON2 'Are you sure you want to uninstall ${APP_NAME}?' IDYES skip
 	Abort
 
@@ -219,7 +220,11 @@ Function un.onInit
 FunctionEnd
 
 Function un.onUninstSuccess
+	IfSilent skip
+
 	MessageBox MB_OK|MB_ICONINFORMATION '${APP_NAME} was completely removed.'
+
+	skip:
 FunctionEnd
 
 Section "!${APP_NAME}"
@@ -306,6 +311,7 @@ SectionEnd
 
 Section "Uninstall"
 	IfFileExists $INSTDIR\${APP_NAME_SHORT}.exe installed
+
 	MessageBox MB_YESNO "It does not appear that ${APP_NAME} is installed in the directory '$INSTDIR'.$\r$\nContinue anyway (not recommended)?" IDYES installed
 	Abort
 
