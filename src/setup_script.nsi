@@ -19,7 +19,7 @@ Unicode true
 
 ; Defines
 !define APP_AUTHOR "Henry++"
-!define APP_WEBSITE "https://www.henrypp.org"
+!define APP_WEBSITE "https://github.com/henrypp"
 
 !define COPYRIGHT "(c) ${APP_AUTHOR}. All rights reversed."
 !define LICENSE_FILE "${APP_FILES_DIR}\64\License.txt"
