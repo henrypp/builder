@@ -165,12 +165,6 @@ Function .onInit
 
 	Push $R0
 
-	${GetParameters} $R0
-
-	${GetOptions} $R0 '/s' $0
-	IfErrors +2 0
-	SetSilent silent
-
 	; Check if we are updating current configuration, then check executable existing.
 	IfSilent 0 not_update
 	ClearErrors
@@ -186,13 +180,12 @@ Function .onInit
 	not_update:
 	Pop $R0
 
-	; Windows 7 and later
-	${If} ${APP_NAME_SHORT} == 'simplewall'
-		${IfNot} ${AtLeastWin7}
-			IfSilent +1
-			MessageBox MB_OK|MB_ICONEXCLAMATION '${APP_NAME} requires Windows 7 SP1 or later.'
-			Abort
-		${EndIf}
+	; Windows 8.1 and later
+	${IfNot} ${AtLeastWin8.1}
+		IfSilent skip
+		MessageBox MB_OK|MB_ICONEXCLAMATION '${APP_NAME} requires Windows 8.1 or later.'
+		skip:
+		Abort
 	${EndIf}
 FunctionEnd
 
@@ -200,16 +193,6 @@ Function un.onInit
 	${If} ${RunningX64}
 		SetRegView 64
 	${EndIf}
-
-	Push $R0
-
-	${GetParameters} $R0
-	${GetOptions} $R0 '/s' $0
-	IfErrors +2 0
-	SetSilent silent
-	ClearErrors
-
-	Pop $R0
 
 	IfSilent skip
 
@@ -300,6 +283,7 @@ Section /o "Store settings in application directory (portable mode)" SecPortable
 
 	; Create portable indicator file
 	not_portable:
+
 	FileOpen $R0 "$INSTDIR\portable.dat" w
 	FileWrite $R0 "#PORTABLE#" ; we write a new line
 	FileClose $R0
@@ -319,9 +303,7 @@ Section "Uninstall"
 
 	${CloseInstances}
 
-	${If} ${APP_NAME_SHORT} == 'simplewall'
-		ExecWait '"$INSTDIR\${APP_NAME_SHORT}.exe" -uninstall'
-	${EndIf}
+	ExecWait '"$INSTDIR\${APP_NAME_SHORT}.exe" -uninstall'
 
 	; Remove shortcuts
 	RMDir /r "$SMPROGRAMS\${APP_NAME}"
@@ -376,9 +358,6 @@ Section "Uninstall"
 
 		Delete "$INSTDIR\profile_internal.xml"
 		Delete "$INSTDIR\profile_internal.sp"
-
-		Delete "$INSTDIR\profile.sp"
-		Delete "$INSTDIR\profile.sp.bak"
 	${EndIf}
 
 	Delete "$INSTDIR\Uninstall.exe"
