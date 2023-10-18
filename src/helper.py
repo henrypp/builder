@@ -85,7 +85,7 @@ def format_size (size, decimal_places=2):
 	return f"{size:.{decimal_places}f} {unit}"
 
 def pack_buffer_lznt (buffer_data):
-	format_and_engine = wintypes.USHORT (COMPRESS_FORMAT['COMPRESSION_FORMAT_LZNT1'].value | COMPRESS_ENGINE['COMPRESSION_ENGINE_MAXIMUM'].value)
+	format_and_engine = wintypes.USHORT (COMPRESS_FORMAT['COMPRESSION_FORMAT_XPRESS'].value | COMPRESS_ENGINE['COMPRESSION_ENGINE_MAXIMUM'].value)
 
 	workspace_buffer_size = wintypes.ULONG ()
 	workspace_fragment_size = wintypes.ULONG ()
@@ -147,7 +147,7 @@ def pack_buffer_lznt (buffer_data):
 	return buffer
 
 def unpack_buffer_lznt (buffer_data):
-	format_and_engine = wintypes.USHORT (COMPRESS_FORMAT['COMPRESSION_FORMAT_LZNT1'].value)
+	format_and_engine = wintypes.USHORT (COMPRESS_FORMAT['COMPRESSION_FORMAT_XPRESS'].value)
 
 	# Allocate memory
 	uncompressed_buffer = ctypes.create_string_buffer (len (buffer_data) * 8)
