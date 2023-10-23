@@ -28,4 +28,4 @@
 Website: [www.henrypp.org](https://www.henrypp.org)<br />
 Support: support@henrypp.org<br />
 <br />
-(c) 2018-2022 Henry++
+(c) 2018-2023 Henry++
