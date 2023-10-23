@@ -113,7 +113,7 @@ with open (RESOURCE_H, 'r') as fn:
 		else:
 			var = line.split (' ')
 
-			if len (var) != 3 or not var[1] or not var[2] or not var[2].strip ().isdigit ():
+			if len (var) < 3 or not var[1] or not var[2] or not var[2].strip ().isdigit ():
 				header_content += line + '\n'
 
 			else:
