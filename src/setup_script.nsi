@@ -4,7 +4,6 @@ SetCompressor /SOLID lzma
 SetCompressorDictSize 64
 SetDatablockOptimize on
 SetDateSave off
-SetCompress force
 Unicode true
 
 ; Includes
@@ -79,7 +78,6 @@ UninstallIcon "${NSISDIR}\Contrib\Graphics\Icons\classic-uninstall.ico"
 InstallDir "$PROGRAMFILES64\${APP_NAME}"
 InstallDirRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "InstallLocation"
 
-;OutFile "${APP_NAME_SHORT}-${APP_VERSION}-setup.exe"
 RequestExecutionLevel admin
 
 !define DEBUG `System::Call kernel32::OutputDebugString(ts)`
@@ -169,11 +167,6 @@ Function .onInit
 	IfSilent 0 not_update
 	ClearErrors
 
-	${GetOptions} $R0 '/u' $0
-	IfErrors update 0
-	IfFileExists "$INSTDIR\${APP_NAME_SHORT}.exe" update 0
-	Abort
-
 	update:
 	ClearErrors
 
@@ -236,15 +229,11 @@ Section "!${APP_NAME}"
 	; Create uninstall entry
 	Call CreateUninstallEntry
 
-	Push $R0
+	IfSilent 0 skip
 
-	${GetParameters} $R0
-	${GetOptions} $R0 '/u' $0
-
-	IfErrors +2
 	Call RunApplication
 
-	Pop $R0
+	skip:
 SectionEnd
 
 Section "Localization"
