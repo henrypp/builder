@@ -229,11 +229,9 @@ Section "!${APP_NAME}"
 	; Create uninstall entry
 	Call CreateUninstallEntry
 
-	IfSilent 0 skip
+	IfSilent 0 +1
 
 	Call RunApplication
-
-	skip:
 SectionEnd
 
 Section "Localization"
