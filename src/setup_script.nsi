@@ -167,6 +167,11 @@ Function .onInit
 	IfSilent 0 not_update
 	ClearErrors
 
+	${GetOptions} $R0 '/u' $0
+	IfErrors update 0
+	IfFileExists "$INSTDIR\${APP_NAME_SHORT}.exe" update 0
+	Abort
+
 	update:
 	ClearErrors
 
@@ -229,7 +234,15 @@ Section "!${APP_NAME}"
 	; Create uninstall entry
 	Call CreateUninstallEntry
 
-	IfSilent 0 +1
+	Push $R0
+
+	${GetParameters} $R0
+	${GetOptions} $R0 '/u' $0
+
+	IfErrors +2
+	Call RunApplication
+
+	Pop $R0
 
 	Call RunApplication
 SectionEnd
