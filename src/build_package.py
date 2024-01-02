@@ -45,8 +45,8 @@ log_status (status.TITLE, 'Copy GIT configuration')
 if os.path.isfile (os.path.join (CURRENT_DIRECTORY, '.github', 'FUNDING.yml')):
 	file_copy (os.path.join (CURRENT_DIRECTORY, '.github', 'FUNDING.yml'), os.path.join (PROJECT_DIRECTORY, '.github', 'FUNDING.yml'))
 
-if os.path.isfile (os.path.join (CURRENT_DIRECTORY, '.editorconfig')):
-	file_copy (os.path.join (CURRENT_DIRECTORY, '.editorconfig'), os.path.join (PROJECT_DIRECTORY, '.editorconfig'))
+#if os.path.isfile (os.path.join (CURRENT_DIRECTORY, '.editorconfig')):
+#	file_copy (os.path.join (CURRENT_DIRECTORY, '.editorconfig'), os.path.join (PROJECT_DIRECTORY, '.editorconfig'))
 
 if os.path.isfile (os.path.join (CURRENT_DIRECTORY, '.gitattributes')):
 	file_copy (os.path.join (CURRENT_DIRECTORY, '.gitattributes'), os.path.join (PROJECT_DIRECTORY, '.gitattributes'))
