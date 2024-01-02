@@ -25,7 +25,7 @@
 - Run `simplewall\build_locale.bat`
 - The script was update `simplewall\bin\simplewall.lng` localization file.
 
-Website: [www.henrypp.org](https://www.henrypp.org)<br />
-Support: support@henrypp.org<br />
+- Website: [github.com/henrypp](https://github.com/henrypp)
+- Support: sforce5@mail.ru
 <br />
 (c) 2018-2023 Henry++
