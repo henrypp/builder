@@ -243,8 +243,6 @@ Section "!${APP_NAME}"
 	Call RunApplication
 
 	Pop $R0
-
-	Call RunApplication
 SectionEnd
 
 Section "Localization"
