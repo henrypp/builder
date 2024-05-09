@@ -178,10 +178,10 @@ Function .onInit
 	not_update:
 	Pop $R0
 
-	; Windows 8.1 and later
-	${IfNot} ${AtLeastWin8.1}
+	; Windows 7 and later only
+	${IfNot} ${AtLeastWin7}
 		IfSilent skip
-		MessageBox MB_OK|MB_ICONEXCLAMATION '${APP_NAME} requires Windows 8.1 or later.'
+		MessageBox MB_OK|MB_ICONEXCLAMATION '${APP_NAME} requires Windows 7 or later.'
 		skip:
 		Abort
 	${EndIf}
