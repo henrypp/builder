@@ -80,12 +80,13 @@ def format_size (size, decimal_places=2):
 	for unit in ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB']:
 		if size < 1024.0 or unit == 'PiB':
 			break
+
 		size /= 1024.0
 
 	return f"{size:.{decimal_places}f} {unit}"
 
 def pack_buffer_lznt (buffer_data):
-	format_and_engine = wintypes.USHORT (COMPRESS_FORMAT['COMPRESSION_FORMAT_XPRESS'].value | COMPRESS_ENGINE['COMPRESSION_ENGINE_MAXIMUM'].value)
+	format_and_engine = wintypes.USHORT (COMPRESS_FORMAT['COMPRESSION_FORMAT_LZNT1'].value | COMPRESS_ENGINE['COMPRESSION_ENGINE_MAXIMUM'].value)
 
 	workspace_buffer_size = wintypes.ULONG ()
 	workspace_fragment_size = wintypes.ULONG ()
@@ -137,7 +138,6 @@ def pack_buffer_lznt (buffer_data):
 		ctypes.byref (compressed_length),
 		ctypes.addressof (workspace)
 	)
-
 	if result != 0:
 		log_status (status.FAILED, 'RtlCompressBuffer failed: 0x{0:X} {0:d} ({1:s})'.format (result, ctypes.FormatError (result)))
 		return None
