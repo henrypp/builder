@@ -28,4 +28,4 @@
 - Website: [github.com/henrypp](https://github.com/henrypp)
 - Support: sforce5@mail.ru
 <br />
-(c) 2018-2023 Henry++
+(c) 2018-2024 Henry++
