@@ -1,5 +1,5 @@
-import argparse
 import configparser
+import argparse
 from helper import *
 
 # Colored terminal fix
@@ -35,70 +35,73 @@ log_status (status.SUCCESS, 'Key to copy "' + LOCALE_KEY + '" is set')
 
 log_status (status.TITLE, 'Start parsing localization')
 
-for name in os.listdir (I18N_DIRECTORY_DST):
+for name in os.listdir (I18N_DIRECTORY_SRC):
 	if not name.endswith ('.ini'):
 		continue
 
 	locale_name = os.path.splitext (name)[0]
 	locale_path_src = os.path.join (I18N_DIRECTORY_SRC, name)
 
-	if not os.path.isfile (locale_path_src):
-		log_status (status.FAILED, 'Locale "' + locale_name + '" was not found is src')
+	locale_ini_src = configparser.ConfigParser (delimiters='=', interpolation=None)
+	locale_ini_src.optionxform = str
+
+	locale_ini_src.read (locale_path_src, encoding='utf-16')
+
+	if not locale_name in locale_ini_src or not LOCALE_KEY in locale_ini_src[locale_name]:
+		log_status (status.FAILED, 'Locale "' + locale_name + '" key "' + LOCALE_KEY + '" was not found')
 
 	else:
+		locale_path_dst = os.path.join (I18N_DIRECTORY_DST, name)
 
-		locale_ini_src = configparser.ConfigParser (delimiters='=')
-		locale_ini_src.optionxform = str
+		locale_ini_dst = configparser.ConfigParser (delimiters='=', interpolation=None)
+		locale_ini_dst.optionxform = str
 
-		locale_ini_src.read (locale_path_src, encoding='utf-16')
+		locale_ini_dst.read (locale_path_dst, encoding='utf-16')
 
-		if not locale_name in locale_ini_src or not LOCALE_KEY in locale_ini_src[locale_name]:
-			log_status (status.FAILED, 'Locale "' + locale_name + '" key was not found')
+		if not locale_name in locale_ini_dst:
+			log_status (status.FAILED, 'Locale "' + LOCALE_KEY + '" was incorrect')
+			continue
 
-		else:
-			locale_path_dst = os.path.join (I18N_DIRECTORY_DST, name)
+		if not LOCALE_KEY in locale_ini_src[locale_name]:
+			log_status (status.FAILED, 'Locale "' + LOCALE_KEY + '" was not found')
+			continue
 
-			locale_ini_dst = configparser.ConfigParser (delimiters='=')
-			locale_ini_dst.optionxform = str
+		locale_value = locale_ini_src.get (locale_name, LOCALE_KEY, fallback=None, raw=True)
 
-			locale_ini_dst.read (locale_path_dst, encoding='utf-16')
+		if not locale_value:
+			log_status (status.FAILED, 'Locale "' + LOCALE_KEY + '" was empty in "' + locale_name + '"')
+			continue
 
-			if not locale_name in locale_ini_dst:
-				log_status (status.FAILED, 'Locale "' + LOCALE_KEY + '" was incorrect')
-				continue
+		if LOCALE_KEY in locale_ini_dst[locale_name] and locale_ini_dst[locale_name][LOCALE_KEY] == locale_value:
+			log_status (status.WARNING, 'Locale "' + locale_name + '" was already the same')
+			continue
 
-			locale_value = locale_ini_src[locale_name][LOCALE_KEY]
+		log_status (status.SUCCESS, 'Locale "' + locale_name + '" key was updated')
 
-			if LOCALE_KEY in locale_ini_dst[locale_name] and locale_ini_dst[locale_name][LOCALE_KEY] == locale_value:
-				log_status (status.WARNING, 'Locale "' + locale_name + '" was already localized')
-				continue
+		locale_ini_dst.set (locale_name, LOCALE_KEY, locale_value)
 
-			log_status (status.SUCCESS, 'Locale "' + locale_name + '" key was updated')
+		# Update locale
+		locale_content = ''
 
-			locale_ini_dst.set (locale_name, LOCALE_KEY, locale_value)
+		with open (locale_path_dst, mode='r', encoding='utf-16') as ini_file:
+			lines = ini_file.readlines ()
+			ini_file.close ()
 
-			# Update locale
-			locale_content = ''
+			for line in lines:
+				if line.startswith (';'):
+					locale_content = locale_content + line
+				else:
+					break
 
-			with open (locale_path_dst, mode='r', encoding='utf-16') as ini_file:
-				lines = ini_file.readlines ()
-				ini_file.close ()
+			if locale_content:
+				locale_content = locale_content + '\n'
 
-				for line in lines:
-					if line.startswith (';'):
-						locale_content = locale_content + line
-					else:
-						break
+			locale_content = locale_content + '[' + locale_name + ']\n'
+			ini_file.close ()
 
-				if locale_content:
-					locale_content = locale_content + '\n'
+		for name,value in locale_ini_dst.items (locale_name, raw=True):
+			locale_content = locale_content + name + '=' + value + '\n'
 
-				locale_content = locale_content + '[' + locale_name + ']\n'
-				ini_file.close ()
-
-			for name,value in locale_ini_dst.items (locale_name, raw=True):
-				locale_content = locale_content + name + '=' + value + '\n'
-
-			with open (locale_path_dst, 'w', encoding='utf-16') as ini_file:
-				ini_file.write (locale_content)
-				ini_file.close ()
+		with open (locale_path_dst, 'w', encoding='utf-16') as ini_file:
+			ini_file.write (locale_content)
+			ini_file.close ()
