@@ -19,8 +19,8 @@ BIN_DIRECTORY = os.path.join (PROJECT_DIRECTORY, 'bin')
 OUT_DIRECTORY = os.path.join (os.path.join (os.environ['USERPROFILE']), 'Desktop')
 TMP_DIRECTORY = os.path.join (os.environ['TEMP'], 'builder', APP_NAME_SHORT)
 
-PORTABLE_FILE = os.path.join (OUT_DIRECTORY, APP_NAME_SHORT + '-' + APP_VERSION + '-bin.zip')
-PDB_PACKAGE_FILE = os.path.join (OUT_DIRECTORY, APP_NAME_SHORT + '-' + APP_VERSION + '-pdb.zip')
+PORTABLE_FILE = os.path.join (OUT_DIRECTORY, APP_NAME_SHORT + '-' + APP_VERSION + '-bin.7z')
+PDB_PACKAGE_FILE = os.path.join (OUT_DIRECTORY, APP_NAME_SHORT + '-' + APP_VERSION + '-pdb.7z')
 SETUP_FILE = os.path.join (OUT_DIRECTORY, APP_NAME_SHORT + '-' + APP_VERSION + '-setup.exe')
 CHECKSUM_FILE = os.path.join (OUT_DIRECTORY, APP_NAME_SHORT + '-' + APP_VERSION + '.sha256')
 

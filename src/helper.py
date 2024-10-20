@@ -324,7 +324,7 @@ def file_sign (path):
 
 	log_status (status.SUCCESS, 'File sign: "' + get_file_name (path) + '"')
 
-	os.system ('gpg --output "' + path_sign + '" --detach-sign "' + path + '"')
+	os.system ('gpg.exe --output "' + path_sign + '" --detach-sign "' + path + '"')
 
 def file_copy_mask (mask, dst_dir):
 	for fn in glob.glob (mask):
@@ -346,7 +346,9 @@ def dir_remove (path):
 			file_remove (fn)
 
 def file_pack_directory (out_file, directory):
-	os.system ('7z.exe a -mm=Deflate64 -mx=9 -mfb=257 -mpass=15 -mmt=on -mtc=off -slp -bb1 "' + out_file + '" "' + directory + '"')
+	# МАТЬ ЕБАЛ ДОКУМЕНТАЦИЮ КОМАНДНОЙ СТРОКИ "7z.exe a -h"
+	# ТАМ ПОНЯТНО РОВНО - НИ-ХУ-Я БЛЯТЬ!
+	os.system ('7z.exe a -mm=LZMA2 -mx=9 -mfb=257 -mtc=off -slp -bb1 "' + out_file + '" -r "' + directory + '"')
 
 def initialize_helper ():
 	# Colored terminal fix
