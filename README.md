@@ -2,16 +2,16 @@
 
 ### Short description of what doing this scripts:
 
-- Build project portable zip package.
+- Build project portable `7z` package.
 - Build project installation package.
 - Update localization `.lng` file from `.ini` files ([as example](https://github.com/henrypp/builder#how-to-update-localization)).
 
 ### System requirements:
 
-- Python 3.7+
-- 7-Zip 21+ (used from `%path%`)
-- GPG 2.2+ (used from `%path%`)
-- NSIS 3+ (used from `%path%`)
+- Python 3.13+
+- 7-Zip 24+ (used from `%path%`)
+- GPG 2.5+ (used from `%path%`)
+- NSIS 3.10+ (used from `%path%`)
 
 ### How to update localization:
 
@@ -26,5 +26,5 @@
 ---
 - Website: [github.com/henrypp](https://github.com/henrypp)
 - Support: sforce5@mail.ru
-
+---
 (c) 2018-2024 Henry++
