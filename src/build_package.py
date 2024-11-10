@@ -245,6 +245,20 @@ log_status (status.TITLE, 'Cleaning temporary files')
 
 dir_remove (TMP_DIRECTORY)
 
+# Create debug symbols package
+log_status (status.TITLE, 'Create debug symbols package')
+
+if is_buildfor_32:
+	file_copy (os.path.join (BIN_DIRECTORY, '32', APP_NAME_SHORT + '.pdb'), os.path.join (TMP_DIRECTORY, '32', APP_NAME_SHORT + '.pdb'))
+
+if is_buildfor_64:
+	file_copy (os.path.join (BIN_DIRECTORY, '64', APP_NAME_SHORT + '.pdb'), os.path.join (TMP_DIRECTORY, '64', APP_NAME_SHORT + '.pdb'))
+
+if is_buildfor_arm64:
+	file_copy (os.path.join (BIN_DIRECTORY, 'arm64', APP_NAME_SHORT + '.pdb'), os.path.join (TMP_DIRECTORY, 'arm64', APP_NAME_SHORT + '.pdb'))
+
+file_pack_directory (PDB_PACKAGE_FILE, TMP_DIRECTORY)
+
 # Calculate sha256 checksum for files
 log_status (status.TITLE, 'Calculate sha256 checksum for files')
 
@@ -255,6 +269,9 @@ if os.path.isfile (PORTABLE_FILE):
 
 if os.path.isfile (SETUP_FILE):
 	hash_string += file_get_sha256 (SETUP_FILE)
+
+if os.path.isfile (PDB_PACKAGE_FILE):
+	hash_string += file_get_sha256 (PDB_PACKAGE_FILE)
 
 if binary_hash_32:
 	hash_string += '#32-bit\n' + binary_hash_32
@@ -269,20 +286,6 @@ if hash_string:
 	file_create (CHECKSUM_FILE, hash_string)
 else:
 	log_status (status.FAILED, 'Hash string is empty!')
-
-# Create debug symbols package
-log_status (status.TITLE, 'Create debug symbols package')
-
-if is_buildfor_32:
-	file_copy (os.path.join (BIN_DIRECTORY, '32', APP_NAME_SHORT + '.pdb'), os.path.join (TMP_DIRECTORY, '32', APP_NAME_SHORT + '.pdb'))
-
-if is_buildfor_64:
-	file_copy (os.path.join (BIN_DIRECTORY, '64', APP_NAME_SHORT + '.pdb'), os.path.join (TMP_DIRECTORY, '64', APP_NAME_SHORT + '.pdb'))
-
-if is_buildfor_arm64:
-	file_copy (os.path.join (BIN_DIRECTORY, 'arm64', APP_NAME_SHORT + '.pdb'), os.path.join (TMP_DIRECTORY, 'arm64', APP_NAME_SHORT + '.pdb'))
-
-file_pack_directory (PDB_PACKAGE_FILE, TMP_DIRECTORY)
 
 # Cleaning temporary files
 log_status (status.TITLE, 'Cleaning temporary files')
