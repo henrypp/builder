@@ -62,7 +62,6 @@ ManifestSupportedOS all
 ManifestLongPathAware true
 ManifestDPIAware true
 ShowInstDetails show
-ShowUninstDetails nevershow
 SilentUnInstall silent
 XPStyle on
 
@@ -181,7 +180,9 @@ Function .onInit
 	; Windows 7 and later only
 	${IfNot} ${AtLeastWin7}
 		IfSilent skip
-		MessageBox MB_OK|MB_ICONEXCLAMATION '${APP_NAME} requires Windows 7 or later.'
+
+		MessageBox MB_OK|MB_ICONEXCLAMATION '${APP_NAME} requires Windows 7 and later!'
+
 		skip:
 		Abort
 	${EndIf}
@@ -203,7 +204,7 @@ FunctionEnd
 Function un.onUninstSuccess
 	IfSilent skip
 
-	MessageBox MB_OK|MB_ICONINFORMATION '${APP_NAME} was completely removed.'
+	MessageBox MB_OK|MB_ICONINFORMATION '${APP_NAME} was completely removed!'
 
 	skip:
 FunctionEnd
@@ -283,7 +284,7 @@ Section /o "Store settings in application directory (portable mode)" SecPortable
 	not_portable:
 
 	FileOpen $R0 "$INSTDIR\portable.dat" w
-	FileWrite $R0 "#PORTABLE#" ; we write a new line
+	FileWrite $R0 "#PORTABLE#" ; for not being empty
 	FileClose $R0
 
 	portable:
@@ -294,7 +295,7 @@ SectionEnd
 Section "Uninstall"
 	IfFileExists $INSTDIR\${APP_NAME_SHORT}.exe installed
 
-	MessageBox MB_YESNO "It does not appear that ${APP_NAME} is installed in the directory '$INSTDIR'.$\r$\nContinue anyway (not recommended)?" IDYES installed
+	MessageBox MB_YESNO "It does not appear that ${APP_NAME} is installed in the installation directory.$\r$\nContinue anyway (not recommended)?" IDYES installed
 	Abort
 
 	installed:
@@ -308,6 +309,7 @@ Section "Uninstall"
 	Delete "$DESKTOP\${APP_NAME}.lnk"
 
 	; Clean registry
+	DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}"
 	DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}"
 
 	DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "${APP_NAME}"
@@ -373,6 +375,7 @@ Function CreateUninstallEntry
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "Publisher" "${APP_AUTHOR}"
 	WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "URLInfoAbout" "${APP_WEBSITE}"
 
+	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "Installed" 1
 	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "NoModify" 1
 	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "NoRepair" 1
 FunctionEnd
