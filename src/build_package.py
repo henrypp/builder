@@ -54,8 +54,8 @@ if os.path.isfile (os.path.join (CURRENT_DIRECTORY, '.gitattributes')):
 if os.path.isfile (os.path.join (CURRENT_DIRECTORY, '.gitignore')):
 	file_copy (os.path.join (CURRENT_DIRECTORY, '.gitignore'), os.path.join (PROJECT_DIRECTORY, '.gitignore'))
 
-#if os.path.isfile (os.path.join (CURRENT_DIRECTORY, '.gitmodules')):
-#	file_copy (os.path.join (CURRENT_DIRECTORY, '.gitmodules'), os.path.join (PROJECT_DIRECTORY, '.gitmodules'))
+if os.path.isfile (os.path.join (CURRENT_DIRECTORY, '.gitmodules')):
+	file_copy (os.path.join (CURRENT_DIRECTORY, '.gitmodules'), os.path.join (PROJECT_DIRECTORY, '.gitmodules'))
 
 if os.path.isfile (os.path.join (BIN_DIRECTORY, 'History.txt')):
 	file_copy (os.path.join (BIN_DIRECTORY, 'History.txt'), os.path.join (PROJECT_DIRECTORY, 'CHANGELOG.md'))
@@ -152,32 +152,32 @@ if is_buildfor_64:
 		file_copy (os.path.join (BIN_DIRECTORY, APP_NAME_SHORT + '.lng'), os.path.join (TMP_DIRECTORY, '64', APP_NAME_SHORT + '.lng'))
 
 if is_buildfor_arm64:
-	os.makedirs (os.path.join (TMP_DIRECTORY, 'arm64'), exist_ok=True)
+	os.makedirs (os.path.join (TMP_DIRECTORY, 'ARM64'), exist_ok=True)
 
-	file_create (os.path.join (TMP_DIRECTORY, 'arm64', 'portable.dat'), '#PORTABLE#')
+	file_create (os.path.join (TMP_DIRECTORY, 'ARM64', 'portable.dat'), '#PORTABLE#')
 
-	file_copy_mask (os.path.join (BIN_DIRECTORY, 'arm64', '*.exe'), os.path.join (TMP_DIRECTORY, 'arm64'));
-	file_copy_mask (os.path.join (BIN_DIRECTORY, 'arm64', '*.scr'), os.path.join (TMP_DIRECTORY, 'arm64'));
-	file_copy_mask (os.path.join (BIN_DIRECTORY, 'arm64', '*.dll'), os.path.join (TMP_DIRECTORY, 'arm64'));
+	file_copy_mask (os.path.join (BIN_DIRECTORY, 'ARM64', '*.exe'), os.path.join (TMP_DIRECTORY, 'ARM64'));
+	file_copy_mask (os.path.join (BIN_DIRECTORY, 'ARM64', '*.scr'), os.path.join (TMP_DIRECTORY, 'ARM64'));
+	file_copy_mask (os.path.join (BIN_DIRECTORY, 'ARM64', '*.dll'), os.path.join (TMP_DIRECTORY, 'ARM64'));
 
-	file_copy_mask (os.path.join (BIN_DIRECTORY, '*.bat'), os.path.join (TMP_DIRECTORY, 'arm64'));
-	file_copy_mask (os.path.join (BIN_DIRECTORY, '*.reg'), os.path.join (TMP_DIRECTORY, 'arm64'));
-	file_copy_mask (os.path.join (BIN_DIRECTORY, '*.dat'), os.path.join (TMP_DIRECTORY, 'arm64'));
+	file_copy_mask (os.path.join (BIN_DIRECTORY, '*.bat'), os.path.join (TMP_DIRECTORY, 'ARM64'));
+	file_copy_mask (os.path.join (BIN_DIRECTORY, '*.reg'), os.path.join (TMP_DIRECTORY, 'ARM64'));
+	file_copy_mask (os.path.join (BIN_DIRECTORY, '*.dat'), os.path.join (TMP_DIRECTORY, 'ARM64'));
 
 	if is_readme_exist:
-		file_copy (os.path.join (BIN_DIRECTORY, 'Readme.txt'), os.path.join (TMP_DIRECTORY, 'arm64', 'Readme.txt'))
+		file_copy (os.path.join (BIN_DIRECTORY, 'Readme.txt'), os.path.join (TMP_DIRECTORY, 'ARM64', 'Readme.txt'))
 
 	if is_history_exist:
-		file_copy (os.path.join (BIN_DIRECTORY, 'History.txt'), os.path.join (TMP_DIRECTORY, 'arm64', 'History.txt'))
+		file_copy (os.path.join (BIN_DIRECTORY, 'History.txt'), os.path.join (TMP_DIRECTORY, 'ARM64', 'History.txt'))
 
 	if is_license_exist:
-		file_copy (os.path.join (BIN_DIRECTORY, 'License.txt'), os.path.join (TMP_DIRECTORY, 'arm64', 'License.txt'))
+		file_copy (os.path.join (BIN_DIRECTORY, 'License.txt'), os.path.join (TMP_DIRECTORY, 'ARM64', 'License.txt'))
 
 	if is_config_exist:
-		file_copy (os.path.join (BIN_DIRECTORY, APP_NAME_SHORT + '.ini'), os.path.join (TMP_DIRECTORY, 'arm64', APP_NAME_SHORT + '.ini'))
+		file_copy (os.path.join (BIN_DIRECTORY, APP_NAME_SHORT + '.ini'), os.path.join (TMP_DIRECTORY, 'ARM64', APP_NAME_SHORT + '.ini'))
 
 	if is_locale_exist:
-		file_copy (os.path.join (BIN_DIRECTORY, APP_NAME_SHORT + '.lng'), os.path.join (TMP_DIRECTORY, 'arm64', APP_NAME_SHORT + '.lng'))
+		file_copy (os.path.join (BIN_DIRECTORY, APP_NAME_SHORT + '.lng'), os.path.join (TMP_DIRECTORY, 'ARM64', APP_NAME_SHORT + '.lng'))
 
 # Calculate binaries hash
 binary_hash_32 = None
@@ -196,11 +196,11 @@ if os.path.isfile (os.path.join (TMP_DIRECTORY, '64', APP_NAME_SHORT + '.exe')):
 elif os.path.isfile (os.path.join (TMP_DIRECTORY, '64', APP_NAME_SHORT + '.scr')):
 	binary_hash_64 = file_get_sha256 (os.path.join (TMP_DIRECTORY, '64', APP_NAME_SHORT + '.scr'))
 
-if os.path.isfile (os.path.join (TMP_DIRECTORY, 'arm64', APP_NAME_SHORT + '.exe')):
-	binary_hash_arm64 = file_get_sha256 (os.path.join (TMP_DIRECTORY, 'arm64', APP_NAME_SHORT + '.exe'))
+if os.path.isfile (os.path.join (TMP_DIRECTORY, 'ARM64', APP_NAME_SHORT + '.exe')):
+	binary_hash_arm64 = file_get_sha256 (os.path.join (TMP_DIRECTORY, 'ARM64', APP_NAME_SHORT + '.exe'))
 
-elif os.path.isfile (os.path.join (TMP_DIRECTORY, 'arm64', APP_NAME_SHORT + '.scr')):
-	binary_hash_arm64 = file_get_sha256 (os.path.join (TMP_DIRECTORY, 'arm64', APP_NAME_SHORT + '.scr'))
+elif os.path.isfile (os.path.join (TMP_DIRECTORY, 'ARM64', APP_NAME_SHORT + '.scr')):
+	binary_hash_arm64 = file_get_sha256 (os.path.join (TMP_DIRECTORY, 'ARM64', APP_NAME_SHORT + '.scr'))
 
 # Sign binaries with GPG
 log_status (status.TITLE, 'Sign binaries with GPG')
@@ -216,9 +216,9 @@ if is_buildfor_64:
 	file_sign_mask (os.path.join (TMP_DIRECTORY, '64', '*.dll'))
 
 if is_buildfor_arm64:
-	file_sign_mask (os.path.join (TMP_DIRECTORY, 'arm64', '*.exe'))
-	file_sign_mask (os.path.join (TMP_DIRECTORY, 'arm64', '*.scr'))
-	file_sign_mask (os.path.join (TMP_DIRECTORY, 'arm64', '*.dll'))
+	file_sign_mask (os.path.join (TMP_DIRECTORY, 'ARM64', '*.exe'))
+	file_sign_mask (os.path.join (TMP_DIRECTORY, 'ARM64', '*.scr'))
+	file_sign_mask (os.path.join (TMP_DIRECTORY, 'ARM64', '*.dll'))
 
 # Create portable package
 log_status (status.TITLE, 'Create portable package')
@@ -255,12 +255,12 @@ if is_buildfor_64:
 	file_copy (os.path.join (BIN_DIRECTORY, '64', APP_NAME_SHORT + '.pdb'), os.path.join (TMP_DIRECTORY, '64', APP_NAME_SHORT + '.pdb'))
 
 if is_buildfor_arm64:
-	file_copy (os.path.join (BIN_DIRECTORY, 'arm64', APP_NAME_SHORT + '.pdb'), os.path.join (TMP_DIRECTORY, 'arm64', APP_NAME_SHORT + '.pdb'))
+	file_copy (os.path.join (BIN_DIRECTORY, 'ARM64', APP_NAME_SHORT + '.pdb'), os.path.join (TMP_DIRECTORY, 'ARM64', APP_NAME_SHORT + '.pdb'))
 
 file_pack_directory (PDB_PACKAGE_FILE, TMP_DIRECTORY)
 
 # Calculate sha256 checksum for files
-log_status (status.TITLE, 'Calculate sha256 checksum for files')
+log_status (status.TITLE, 'Calculate SHA256 checksum for files')
 
 hash_string = ''
 
@@ -280,7 +280,7 @@ if binary_hash_64:
 	hash_string += '#64-bit\n' + binary_hash_64
 
 if binary_hash_arm64:
-	hash_string += '#arm64\n' + binary_hash_arm64
+	hash_string += '#ARM64\n' + binary_hash_arm64
 
 if hash_string:
 	file_create (CHECKSUM_FILE, hash_string)
