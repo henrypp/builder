@@ -1,17 +1,17 @@
 ; Archive options
 SetCompress force
-SetCompressor /SOLID lzma
-SetCompressorDictSize 64
+SetCompressor /FINAL /SOLID lzma
+SetCompressorDictSize 128
 SetDatablockOptimize on
 SetDateSave off
 Unicode true
 
 ; Includes
+!include 'FileFunc.nsh'
 !include 'LogicLib.nsh'
 !include 'MUI2.nsh'
 !include 'x64.nsh'
 !include 'WinVer.nsh'
-!include 'FileFunc.nsh'
 
 !insertmacro GetParameters
 !insertmacro GetOptions
@@ -41,6 +41,10 @@ Unicode true
 
 !define MUI_FINISHPAGE_NOREBOOTSUPPORT
 
+!define MUI_LANGDLL_REGISTRY_ROOT "HKLM"
+!define MUI_LANGDLL_REGISTRY_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}"
+!define MUI_LANGDLL_REGISTRY_VALUENAME "NSIS:Language"
+
 ; Pages
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "${LICENSE_FILE}"
@@ -50,8 +54,41 @@ Unicode true
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
 
-; Language
+LicenseLangString MUILicense ${LANG_ENGLISH} "${LICENSE_FILE}"
+
+; Language files
+!insertmacro MUI_LANGUAGE "Arabic"
+!insertmacro MUI_LANGUAGE "Albanian"
+!insertmacro MUI_LANGUAGE "Belarusian"
+!insertmacro MUI_LANGUAGE "Catalan"
+!insertmacro MUI_LANGUAGE "Croatian"
+!insertmacro MUI_LANGUAGE "Czech"
+!insertmacro MUI_LANGUAGE "Danish"
+!insertmacro MUI_LANGUAGE "Dutch"
 !insertmacro MUI_LANGUAGE "English"
+!insertmacro MUI_LANGUAGE "Farsi"
+!insertmacro MUI_LANGUAGE "French"
+!insertmacro MUI_LANGUAGE "German"
+!insertmacro MUI_LANGUAGE "Greek"
+!insertmacro MUI_LANGUAGE "Korean"
+!insertmacro MUI_LANGUAGE "Hungarian"
+!insertmacro MUI_LANGUAGE "Indonesian"
+!insertmacro MUI_LANGUAGE "Italian"
+!insertmacro MUI_LANGUAGE "Japanese"
+!insertmacro MUI_LANGUAGE "Lithuanian"
+!insertmacro MUI_LANGUAGE "Polish"
+!insertmacro MUI_LANGUAGE "Portuguese"
+!insertmacro MUI_LANGUAGE "PortugueseBR"
+!insertmacro MUI_LANGUAGE "Romanian"
+!insertmacro MUI_LANGUAGE "Russian"
+!insertmacro MUI_LANGUAGE "SimpChinese"
+!insertmacro MUI_LANGUAGE "Spanish"
+!insertmacro MUI_LANGUAGE "Swedish"
+!insertmacro MUI_LANGUAGE "Thai"
+!insertmacro MUI_LANGUAGE "TradChinese"
+!insertmacro MUI_LANGUAGE "Turkish"
+!insertmacro MUI_LANGUAGE "Ukrainian"
+!insertmacro MUI_RESERVEFILE_LANGDLL
 
 ; Options
 AllowSkipFiles off
@@ -71,8 +108,8 @@ BrandingText "${COPYRIGHT}"
 Caption "${APP_NAME} v${APP_VERSION}"
 UninstallCaption "${APP_NAME}"
 
-Icon "${NSISDIR}\Contrib\Graphics\Icons\classic-install.ico"
-UninstallIcon "${NSISDIR}\Contrib\Graphics\Icons\classic-uninstall.ico"
+Icon "${NSISDIR}\Contrib\Graphics\Icons\orange-install-nsis.ico"
+UninstallIcon "${NSISDIR}\Contrib\Graphics\Icons\orange-uninstall-nsis.ico"
 
 InstallDir "$PROGRAMFILES64\${APP_NAME}"
 InstallDirRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME_SHORT}" "InstallLocation"
@@ -160,6 +197,8 @@ Function .onInit
 		SetRegView 64
 	${EndIf}
 
+	!insertmacro MUI_LANGDLL_DISPLAY
+
 	Push $R0
 
 	; Check if we are updating current configuration, then check executable existing.
@@ -195,7 +234,7 @@ Function un.onInit
 
 	IfSilent skip
 
-	MessageBox MB_YESNO|MB_ICONEXCLAMATION|MB_DEFBUTTON2 'Are you sure you want to uninstall ${APP_NAME}?' IDYES skip
+	MessageBox MB_YESNO|MB_ICONEXCLAMATION|MB_DEFBUTTON2 'Are you sure you want to uninstall ${APP_NAME}?' IDYES skip ; MUI_UNTEXT_CONFIRM_SUBTITLE
 	Abort
 
 	skip:
@@ -218,7 +257,10 @@ Section "!${APP_NAME}"
 
 	${CloseInstances}
 
-	${If} ${RunningX64}
+	${If} ${IsNativeARM64}
+		File "${APP_FILES_DIR}\ARM64\${APP_NAME_SHORT}.exe"
+		File /nonfatal "${APP_FILES_DIR}\ARM64\${APP_NAME_SHORT}.exe.sig"
+	${ElseIf} ${RunningX64}
 		File "${APP_FILES_DIR}\64\${APP_NAME_SHORT}.exe"
 		File /nonfatal "${APP_FILES_DIR}\64\${APP_NAME_SHORT}.exe.sig"
 	${Else}
@@ -284,7 +326,7 @@ Section /o "Store settings in application directory (portable mode)" SecPortable
 	not_portable:
 
 	FileOpen $R0 "$INSTDIR\portable.dat" w
-	FileWrite $R0 "#PORTABLE#" ; for not being empty
+	FileWrite $R0 "#PORTABLE#" ; for is not being empty
 	FileClose $R0
 
 	portable:
