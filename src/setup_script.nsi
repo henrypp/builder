@@ -260,12 +260,9 @@ Section "!${APP_NAME}"
 	${If} ${IsNativeARM64}
 		File "${APP_FILES_DIR}\ARM64\${APP_NAME_SHORT}.exe"
 		File /nonfatal "${APP_FILES_DIR}\ARM64\${APP_NAME_SHORT}.exe.sig"
-	${ElseIf} ${RunningX64}
+	${Else}
 		File "${APP_FILES_DIR}\64\${APP_NAME_SHORT}.exe"
 		File /nonfatal "${APP_FILES_DIR}\64\${APP_NAME_SHORT}.exe.sig"
-	${Else}
-		File "${APP_FILES_DIR}\32\${APP_NAME_SHORT}.exe"
-		File /nonfatal "${APP_FILES_DIR}\32\${APP_NAME_SHORT}.exe.sig"
 	${EndIf}
 
 	File "${APP_FILES_DIR}\64\History.txt"

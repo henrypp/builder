@@ -370,7 +370,6 @@ else:
 	log_status (status.SUCCESS, 'Write locale "' + get_file_name (LOCALE_FILE) + '"')
 
 # Copy localization to binaries folders
-file_copy (LOCALE_FILE, os.path.join (PROJECT_DIRECTORY, 'bin', '32', os.path.basename (LOCALE_FILE)), made_dir=False)
 file_copy (LOCALE_FILE, os.path.join (PROJECT_DIRECTORY, 'bin', '64', os.path.basename (LOCALE_FILE)), made_dir=False)
 file_copy (LOCALE_FILE, os.path.join (PROJECT_DIRECTORY, 'bin', 'ARM64', os.path.basename (LOCALE_FILE)), made_dir=False)
 

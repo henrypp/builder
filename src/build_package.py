@@ -65,7 +65,6 @@ if os.path.isdir (TMP_DIRECTORY):
 	log_status (status.TITLE, 'Cleaning temporary files')
 	dir_remove (TMP_DIRECTORY)
 
-is_buildfor_32 = os.path.isdir (os.path.join (BIN_DIRECTORY, '32'))
 is_buildfor_64 = os.path.isdir (os.path.join (BIN_DIRECTORY, '64'))
 is_buildfor_arm64 = os.path.isdir (os.path.join (BIN_DIRECTORY, 'arm64'))
 
@@ -93,35 +92,6 @@ if not is_config_exist:
 
 if not is_locale_exist:
 	log_status (status.WARNING, 'Locale was not found')
-
-if is_buildfor_32:
-	os.makedirs (os.path.join (TMP_DIRECTORY, '32'), exist_ok=True)
-
-	file_create (os.path.join (TMP_DIRECTORY, '32', 'portable.dat'), '#PORTABLE#')
-
-	file_copy_mask (os.path.join (BIN_DIRECTORY, '32', '*.exe'), os.path.join (TMP_DIRECTORY, '32'));
-	file_copy_mask (os.path.join (BIN_DIRECTORY, '32', '*.scr'), os.path.join (TMP_DIRECTORY, '32'));
-	file_copy_mask (os.path.join (BIN_DIRECTORY, '32', '*.dll'), os.path.join (TMP_DIRECTORY, '32'));
-
-
-	file_copy_mask (os.path.join (BIN_DIRECTORY, '*.bat'), os.path.join (TMP_DIRECTORY, '32'));
-	file_copy_mask (os.path.join (BIN_DIRECTORY, '*.reg'), os.path.join (TMP_DIRECTORY, '32'));
-	file_copy_mask (os.path.join (BIN_DIRECTORY, '*.dat'), os.path.join (TMP_DIRECTORY, '32'));
-
-	if is_readme_exist:
-		file_copy (os.path.join (BIN_DIRECTORY, 'Readme.txt'), os.path.join (TMP_DIRECTORY, '32', 'Readme.txt'))
-
-	if is_history_exist:
-		file_copy (os.path.join (BIN_DIRECTORY, 'History.txt'), os.path.join (TMP_DIRECTORY, '32', 'History.txt'))
-
-	if is_license_exist:
-		file_copy (os.path.join (BIN_DIRECTORY, 'License.txt'), os.path.join (TMP_DIRECTORY, '32', 'License.txt'))
-
-	if is_config_exist:
-		file_copy (os.path.join (BIN_DIRECTORY, APP_NAME_SHORT + '.ini'), os.path.join (TMP_DIRECTORY, '32', APP_NAME_SHORT + '.ini'))
-
-	if is_locale_exist:
-		file_copy (os.path.join (BIN_DIRECTORY, APP_NAME_SHORT + '.lng'), os.path.join (TMP_DIRECTORY, '32', APP_NAME_SHORT + '.lng'))
 
 if is_buildfor_64:
 	os.makedirs (os.path.join (TMP_DIRECTORY, '64'), exist_ok=True)
@@ -180,15 +150,8 @@ if is_buildfor_arm64:
 		file_copy (os.path.join (BIN_DIRECTORY, APP_NAME_SHORT + '.lng'), os.path.join (TMP_DIRECTORY, 'ARM64', APP_NAME_SHORT + '.lng'))
 
 # Calculate binaries hash
-binary_hash_32 = None
 binary_hash_64 = None
 binary_hash_arm64 = None
-
-if os.path.isfile (os.path.join (TMP_DIRECTORY, '32', APP_NAME_SHORT + '.exe')):
-	binary_hash_32 = file_get_sha256 (os.path.join (TMP_DIRECTORY, '32', APP_NAME_SHORT + '.exe'))
-
-elif os.path.isfile (os.path.join (TMP_DIRECTORY, '32', APP_NAME_SHORT + '.scr')):
-	binary_hash_32 = file_get_sha256 (os.path.join (TMP_DIRECTORY, '32', APP_NAME_SHORT + '.scr'))
 
 if os.path.isfile (os.path.join (TMP_DIRECTORY, '64', APP_NAME_SHORT + '.exe')):
 	binary_hash_64 = file_get_sha256 (os.path.join (TMP_DIRECTORY, '64', APP_NAME_SHORT + '.exe'))
@@ -204,11 +167,6 @@ elif os.path.isfile (os.path.join (TMP_DIRECTORY, 'ARM64', APP_NAME_SHORT + '.sc
 
 # Sign binaries with GPG
 log_status (status.TITLE, 'Sign binaries with GPG')
-
-if is_buildfor_32:
-	file_sign_mask (os.path.join (TMP_DIRECTORY, '32', '*.exe'))
-	file_sign_mask (os.path.join (TMP_DIRECTORY, '32', '*.scr'))
-	file_sign_mask (os.path.join (TMP_DIRECTORY, '32', '*.dll'))
 
 if is_buildfor_64:
 	file_sign_mask (os.path.join (TMP_DIRECTORY, '64', '*.exe'))
@@ -248,9 +206,6 @@ dir_remove (TMP_DIRECTORY)
 # Create debug symbols package
 log_status (status.TITLE, 'Create debug symbols package')
 
-if is_buildfor_32:
-	file_copy (os.path.join (BIN_DIRECTORY, '32', APP_NAME_SHORT + '.pdb'), os.path.join (TMP_DIRECTORY, '32', APP_NAME_SHORT + '.pdb'))
-
 if is_buildfor_64:
 	file_copy (os.path.join (BIN_DIRECTORY, '64', APP_NAME_SHORT + '.pdb'), os.path.join (TMP_DIRECTORY, '64', APP_NAME_SHORT + '.pdb'))
 
@@ -272,9 +227,6 @@ if os.path.isfile (SETUP_FILE):
 
 if os.path.isfile (PDB_PACKAGE_FILE):
 	hash_string += file_get_sha256 (PDB_PACKAGE_FILE)
-
-if binary_hash_32:
-	hash_string += '#32-bit\n' + binary_hash_32
 
 if binary_hash_64:
 	hash_string += '#64-bit\n' + binary_hash_64
