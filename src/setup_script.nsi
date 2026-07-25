@@ -21,7 +21,7 @@ Unicode true
 !define APP_WEBSITE        "https://github.com/henrypp"
 !define /date CURRENT_YEAR "%Y"
 
-!define COPYRIGHT          "(c) ${CURRENT_YEAR} ${APP_AUTHOR}. All Rights Reversed."
+!define COPYRIGHT          "(c) ${CURRENT_YEAR} ${APP_AUTHOR}"
 !define LICENSE_FILE       "${APP_FILES_DIR}\64\License.txt"
 
 !define MUI_ABORTWARNING
@@ -72,7 +72,7 @@ SilentUnInstall silent
 XPStyle on
 
 Name "${APP_NAME}"
-BrandingText "${COPYRIGHT}"
+BrandingText "${COPYRIGHT} $(AllRightsReserved)"
 
 Caption "${APP_NAME} ${APP_VERSION}"
 UninstallCaption "${APP_NAME}"
@@ -436,7 +436,7 @@ VIAddVersionKey "CompanyName"      "${APP_AUTHOR}"
 VIAddVersionKey "FileDescription"  "${APP_NAME} installer"
 VIAddVersionKey "FileVersion"      "${APP_VERSION}"
 VIAddVersionKey "InternalName"     "${APP_NAME_SHORT}"
-VIAddVersionKey "LegalCopyright"   "${COPYRIGHT}"
+VIAddVersionKey "LegalCopyright"   "${COPYRIGHT}. All Rights Reserved."
 VIAddVersionKey "OriginalFilename" "${APP_NAME_SHORT}-${APP_VERSION}-setup.exe"
 VIAddVersionKey "ProductName"      "${APP_NAME}"
 VIAddVersionKey "ProductVersion"   "${APP_VERSION}"
