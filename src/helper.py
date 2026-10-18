@@ -64,9 +64,9 @@ def check_path_with_status (title, path, is_file=False):
 		is_exists = os.path.isdir (path)
 
 	if is_exists:
-		log_status (status.SUCCESS, title + ' "' + get_file_name (path) + '" was found')
+		log_status (status.SUCCESS, title + ' "' + get_file_name (path) + '" was found!')
 	else:
-		log_status (status.FAILED, title + ' "' + get_file_name (path) + '" was not found')
+		log_status (status.FAILED, title + ' "' + get_file_name (path) + '" was not found!')
 		os.sys.exit ('')
 
 def natural_sort (list, key=lambda s:s):
@@ -200,7 +200,7 @@ def compress_file_lznt (file_o, file_s):
 		fn.close ()
 
 		if not data:
-			log_status (status.WARNING, 'File is empty: "' + get_file_name (file_o) + '"')
+			log_status (status.WARNING, 'File is empty: "' + get_file_name (file_o) + '"!')
 
 		else:
 			buffer_length = len (data)
@@ -239,7 +239,7 @@ def file_get_sha256 (path):
 	file_name = get_file_name (path)
 
 	if not os.path.isfile (path):
-		log_status (status.WARNING, 'File hash. Not found: "' + file_name + '"')
+		log_status (status.WARNING, 'File hash. Not found: "' + file_name + '"!')
 		return None
 
 	hash_code = get_sha256 (path)
@@ -248,7 +248,7 @@ def file_get_sha256 (path):
 		log_status (status.SUCCESS, 'File hash: "' + os.path.basename (path) + '" - ' + hash_code)
 		return hash_code + ' *' + os.path.basename (path) + '\n'
 
-	log_status (status.FAILED, 'File hash. Failed: "' + file_name + '"')
+	log_status (status.FAILED, 'File hash. Failed: "' + file_name + '"!')
 
 	return None
 
@@ -279,13 +279,13 @@ def file_copy (src_file, dst_file, made_dir=True):
 		if made_dir:
 			os.makedirs (dst_dir, exist_ok=True)
 		else:
-			log_status (status.WARNING, 'File copy. Dest directory: "' + get_file_name (dst_dir) + '" was not found.')
+			log_status (status.WARNING, 'File copy. Dest directory: "' + get_file_name (dst_dir) + '" was not found!')
 			return
 
 	# Check file existence
 	if os.path.isfile (dst_file):
 		if get_sha256 (dst_file) == get_sha256 (src_file):
-			log_status (status.WARNING, 'File copy. Not modified: "' + file_name + '"')
+			log_status (status.WARNING, 'File copy. Not modified: "' + file_name + '"!')
 			return
 
 	try:
@@ -301,7 +301,7 @@ def file_remove (path):
 	file_name = get_file_name (path)
 
 	if not os.path.isfile (path):
-		log_status (status.WARNING, 'File delete. Not found: "' + file_name + '"')
+		log_status (status.WARNING, 'File delete. Not found: "' + file_name + '"!')
 		return
 
 	try:
@@ -315,7 +315,7 @@ def file_remove (path):
 
 def file_sign (path):
 	if not os.path.isfile (path):
-		log_status (status.FAILED, 'File sign. Not found: "' + get_file_name (path) + '"')
+		log_status (status.FAILED, 'File sign. Not found: "' + get_file_name (path) + '"!')
 		return
 
 	path_sign = path + '.sig'
@@ -336,7 +336,7 @@ def file_sign_mask (mask):
 
 def dir_remove (path):
 	if not os.path.isdir (path):
-		log_status (status.FAILED, 'Directory delete. Not found: "' + get_file_name (path) + '"')
+		log_status (status.FAILED, 'Directory delete. Not found: "' + get_file_name (path) + '"!')
 		return
 
 	for fn in glob.glob (os.path.join (path, '*')):

@@ -1,4 +1,6 @@
 import argparse
+import chardet
+import codecs
 import stat
 from helper import *
 
@@ -8,7 +10,7 @@ def find_and_set (dct, name, value):
 			v['value'] = value
 			return
 
-	log_status (status.FAILED, 'String was not found: "' + name + '"')
+	log_status (status.FAILED, 'String was not found: "' + name + '"!')
 
 # https://www.alchemysoftware.com/livedocs/ezscript/Topics/Catalyst/Language.htm
 def get_locale_name (name):
@@ -60,6 +62,24 @@ def get_locale_name (name):
 
 	return new_name
 
+def convert_utf16toutf8 (path):
+	with open (path, 'rb') as F:
+		text = F.read ()
+		enc = chardet.detect (text).get ('encoding')
+
+		if enc and enc.lower () != 'utf-8':
+			try:
+				text = text.decode (enc)
+				text = text.encode ('utf-8')
+
+				with open (path, 'wb') as f:
+					f.write (text)
+					f.close ()
+			except:
+				log_status (status.ERROR, 'Error in file name %s!' % path)
+		#else:
+		#	print ('File %s already in %s and did not require conversion!' % (path, enc))
+
 parser = argparse.ArgumentParser (add_help=False, description='Build project locale.')
 parser.add_argument ('--name-short', help='project short name', required=True)
 
@@ -71,10 +91,11 @@ APP_NAME_SHORT=args.name_short
 CURRENT_DIRECTORY = os.path.dirname (os.path.abspath (__file__))
 PROJECT_DIRECTORY = os.path.join (CURRENT_DIRECTORY, '..', '..', APP_NAME_SHORT)
 I18N_DIRECTORY = os.path.join (PROJECT_DIRECTORY, 'bin', 'i18n')
-EXAMPLE_DIRECTORY = os.path.join (I18N_DIRECTORY, '!example.txt')
+EXAMPLE_FILE = os.path.join (I18N_DIRECTORY, '!example.txt')
 LOCALE_FILE = os.path.join (PROJECT_DIRECTORY, 'bin', APP_NAME_SHORT + '.lng')
 RESOURCE_RC = os.path.join (PROJECT_DIRECTORY, 'src', 'resource.rc')
 RESOURCE_H = os.path.join (PROJECT_DIRECTORY, 'src', 'resource.h')
+ENCODING = 'utf_8_sig'
 
 # Checking configuration
 log_status (status.TITLE, 'Checking configuration')
@@ -212,7 +233,7 @@ log_status (status.TITLE, 'Create locale example file')
 
 clr = status.FAILED
 
-with open (EXAMPLE_DIRECTORY, 'w', encoding='utf-16', newline='\r\n') as fn:
+with open (EXAMPLE_FILE, 'w', newline='\r\n', encoding=ENCODING) as fn:
 	fn.write ('; <language name>\n' + '; <author information>' + '\n\n' + '[<locale name here>]\n')
 
 	for k,v in strings_array.items ():
@@ -222,7 +243,7 @@ with open (EXAMPLE_DIRECTORY, 'w', encoding='utf-16', newline='\r\n') as fn:
 
 	fn.close ()
 
-log_status (clr, 'Write file "' + get_file_name (EXAMPLE_DIRECTORY) + '" was finished')
+log_status (clr, 'Write file "' + get_file_name (EXAMPLE_FILE) + '" was finished')
 
 if not os.path.isdir (I18N_DIRECTORY):
 	log_status (bcolor.FAILED, 'Locale directory "' + I18N_DIRECTORY + '" was not found.')
@@ -240,6 +261,8 @@ for name in i18n_files:
 
 	locale_name = os.path.splitext (name)[0]
 	locale_path = os.path.join (I18N_DIRECTORY, name)
+
+	convert_utf16toutf8 (locale_path)
 
 	lastmod = os.path.getmtime (locale_path);
 
@@ -268,7 +291,7 @@ for name in i18n_files:
 	#locale_sname = get_locale_name (locale_name)
 
 	try:
-		ini_file = open (locale_path, mode='r', encoding='utf-16')
+		ini_file = open (locale_path, mode='r', encoding=ENCODING)
 		lines = ini_file.readlines ()
 		ini_file.close ()
 
@@ -344,7 +367,7 @@ for name in i18n_files:
 		# Write updated language template
 		filemtime = os.path.getmtime (locale_path);
 
-		with open (locale_path, 'w', encoding='utf-16', newline='\r\n') as ini_file:
+		with open (locale_path, 'w', encoding=ENCODING, newline='\r\n') as ini_file:
 			ini_file.write (locale_content)
 			ini_file.close ()
 
@@ -359,7 +382,7 @@ if os.path.isfile (LOCALE_FILE):
 	os.chmod (LOCALE_FILE, stat.S_IWRITE)
 
 try:
-	lng_file = open (LOCALE_FILE, 'w', encoding='utf-16', newline='\r\n')
+	lng_file = open (LOCALE_FILE, 'w', encoding=ENCODING, newline='\r\n')
 	lng_file.write (lng_content)
 	lng_file.close ()
 
