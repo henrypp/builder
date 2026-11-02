@@ -1,4 +1,4 @@
-import argparse
+﻿import argparse
 import chardet
 import codecs
 import stat
@@ -12,48 +12,92 @@ def find_and_set (dct, name, value):
 
 	log_status (status.FAILED, 'String was not found: "' + name + '"!')
 
-# https://www.alchemysoftware.com/livedocs/ezscript/Topics/Catalyst/Language.htm
+# https://github.com/henrypp/simplewall/issues/948
 def get_locale_name (name):
 	ldict = {
-			'Azerbaijani': 'az',
-			'Belarusian': 'be',
-			'Bosnian': 'bs',
-			'Bulgarian': 'bg',
-			'Catalan': 'ca',
-			'Chinese': 'zh',
-			'Chinese (Simplified)': 'zh-CN',
-			'Chinese (Traditional)': 'zh-TW',
-			'Czech': 'cs',
-			'Dutch': 'nl',
-			'Finnish': 'fi',
-			'French': 'fr',
-			'German': 'de',
-			'Hungarian': 'hu',
-			'Indonesian': 'id',
-			'Italian': 'it',
-			'Japanese': 'ja',
-			'Kazakh': 'kk',
-			'Korean': 'ko',
-			'Persian': 'fa',
-			'Polish': 'pl',
-			'Portuguese': 'pt',
-			'Portuguese (Brazil)': 'pt-BR',
-			'Portuguese (Portugal)': 'pt-PT',
-			'Romanian': 'ro',
-			'Russian': 'ru',
-			'Serbian': 'sr',
-			'Slovak': 'sk',
-			'Spanish': 'es',
-			'Swedish': 'sv',
-			'Turkish': 'tr',
-			'Ukrainian': 'uk',
+		'Abkhaz': 'Аҧсшәа', # 'ab',
+		'Afrikaans': 'Afrikaans', # 'af',
+		'Albanian': 'Shqip', # 'sq',
+		'Arabic': 'العربية', # 'ar-SA',
+		'Armenian': 'Հայերեն', # 'hy-AM',
+		'Azerbaijani': 'Azərbaycanca', # 'az-AZ',
+		'Basque': 'Euskara', # 'eu',
+		'Belarusian': 'Беларуская', # 'be-BY',
+		'Bashkir': 'Башҡортса', # 'ba',
+		'Bavarian': 'Boarisch', # 'bar',
+		'Bosnian': 'Bosanski', # 'bs-BA',
+		'Bulgarian': 'Български', # 'bg-BG',
+		'Cantonese': '粵語', # 'yue',
+		'Catalan': 'Català', # 'ca-AD',
+		'Chechen': 'Нохчийн', # 'ce',
+		'Chinese': '中文', # 'zh',
+		'Chinese (Simplified)': '中文（简体）', # 'zh-CN',
+		'Chinese (Traditional)': '中文（繁體）', # 'zh-TW',
+		'Chuvash': 'Чӑвашла', # 'cv',
+		'Czech': 'Čeština', # 'sk-CZ',
+		'Croatian': 'Hrvatski', # 'hr',
+		'Danish': 'Dansk', # 'da',
+		'Dutch': 'Nederlands', # 'nl-AW',
+		'Finnish': 'Suomi', # 'fi-FI',
+		'French': 'Français', # 'fr-BE',
+		'German': 'Deutsch', # 'de-DE',
+		'Greek': 'Ελληνικά', # 'el',
+		'Hebrew': 'עברית', # 'he',
+		'Hindi': 'हिन्दी', # 'hi',
+		'Hungarian': 'Magyar', # 'hu-HU',
+		'Indonesian': 'Bahasa Indonesia', # 'id-ID',
+		'Ingush': 'ГӀалгӀай', # 'inh',
+		'Irish': 'Gaeilge', # 'ga',
+		'Italian': 'Italiano', # 'it-IT',
+		'Japanese': '日本語 ', # 'ja-JP',
+		'Kazakh': 'Қазақша', # 'kk-KZ',
+		'Khmer': 'ភាសាខ្មែរ', # 'km',
+		'Klingon': 'tlh', # 'tlh',
+		'Korean': '한국어', # 'ko-KP',
+		'Kyrgyz': 'Кыргызча', # 'ky',
+		'Latin': 'Latina', # 'la',
+		'Latvian': 'Latviešu', # 'lv',
+		'Lithuanian': 'Lietuvių', # 'lt',
+		'Macedonian': 'Македонски', # 'mk',
+		'Mongolian': 'Монгол', # 'mn',
+		'Moldovan': 'Молдовеняскэ', # 'mo',
+		'Norwegian': 'Norsk', # 'no',
+		'Ossetian': 'Ирон', # 'os',
+		'Persian': 'فارسی', # 'fa-IR',
+		'Polish': 'Polski', # 'pl-PL',
+		'Portuguese': 'Português', # 'pt-PT',
+		'Portuguese (Brazil)': 'Português do Brasil', # 'pt-BR',
+		'Punjabi': 'پنجابی', # 'pnb',
+		'Russian': 'Русский', # 'ru-RU',
+		'Romanian': 'Română', # 'ro',
+		'Romansh': 'Rumantsch', # 'rm',
+		'Romanian': 'Română', # 'ro',
+		'Sanskrit': 'संस्कृतम्', # 'sa',
+		'Serbian': 'Српски / Srpski ', # 'sr',
+		'Serbian (Cyrillic)': 'Српски (ћирилица)', # 'sr-ec',
+		'Serbian (Latin)': 'Srpski (latinica)', # 'sr-el ',
+		'Slovak': 'Slovenčina', # 'sk-SK',
+		'Slovenian': 'Slovenščina', # 'sl-SI',
+		'Spanish': 'Español', # 'es-ES',
+		'Swedish': 'Svenska', # 'sv-FI',
+		'Tatar': 'Татарча/Tatarça', # 'tt',
+		'Tatar in Cyrillic script': 'Татарча', # 'tt-cyrl',
+		'Tatar in Latin script': 'Tatarça', # 'tt-latn',
+		'Thai': 'ไทย', # 'th',
+		'Tibetan': 'བོད་ཡིག', # 'bo',
+		'Turkish': 'Türkçe', # 'tr-TR',
+		'Turkmen': 'Türkmençe', # 'tk',
+		'Ukrainian': 'Українська', # 'uk-UA',
+		'Uzbek': 'Oʻzbekcha/Ўзбекча ', # 'uz',
+		'Vietnamese': 'Tiếng Việt', # 'vi-VN',
+		'Yakut': 'Саха тыла ', # 'sah',
 	}
 
 	new_name = None
 
-	for lname, lcode in ldict.items():
+	for lname, lnative in ldict.items ():
 		if name.lower () == lname.lower ():
-			new_name = lcode
+			new_name = lnative
 			break
 
 	if not new_name:
@@ -288,7 +332,7 @@ for name in i18n_files:
 	locale_name = os.path.splitext (name)[0]
 	locale_path = os.path.join (I18N_DIRECTORY, name)
 	locale_sname = locale_name
-	#locale_sname = get_locale_name (locale_name)
+	locale_sname = get_locale_name (locale_name)
 
 	try:
 		ini_file = open (locale_path, mode='r', encoding=ENCODING)
