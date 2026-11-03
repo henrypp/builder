@@ -71,7 +71,6 @@ def get_locale_name (name):
 		'Russian': 'Русский', # 'ru-RU',
 		'Romanian': 'Română', # 'ro',
 		'Romansh': 'Rumantsch', # 'rm',
-		'Romanian': 'Română', # 'ro',
 		'Sanskrit': 'संस्कृतम्', # 'sa',
 		'Serbian': 'Српски / Srpski ', # 'sr',
 		'Serbian (Cyrillic)': 'Српски (ћирилица)', # 'sr-ec',
