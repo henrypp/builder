@@ -1,4 +1,4 @@
-import xml.dom.minidom
+﻿import xml.dom.minidom
 import hashlib
 
 import argparse

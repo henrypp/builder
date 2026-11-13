@@ -1,4 +1,4 @@
-; Language files
+﻿; Language files
 !insertmacro MUI_LANGUAGE "Arabic"
 !insertmacro MUI_LANGUAGE "Albanian"
 !insertmacro MUI_LANGUAGE "Belarusian"

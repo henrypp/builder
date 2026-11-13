@@ -1,4 +1,4 @@
-; Archive options
+﻿; Archive options
 SetCompress force
 SetCompressor /FINAL /SOLID lzma
 SetCompressorDictSize 128
