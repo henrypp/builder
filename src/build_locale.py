@@ -425,7 +425,7 @@ if os.path.isfile (LOCALE_FILE):
 	os.chmod (LOCALE_FILE, stat.S_IWRITE)
 
 try:
-	lng_file = open (LOCALE_FILE, 'w', encoding=ENCODING, newline='\r\n')
+	lng_file = open (LOCALE_FILE, 'w', encoding='utf-16', newline='\r\n')
 	lng_file.write (lng_content)
 	lng_file.close ()
 
