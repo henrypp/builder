@@ -305,8 +305,6 @@ for name in i18n_files:
 	locale_name = os.path.splitext (name)[0]
 	locale_path = os.path.join (I18N_DIRECTORY, name)
 
-	convert_utf16toutf8 (locale_path)
-
 	lastmod = os.path.getmtime (locale_path);
 
 	if lastmod > locale_timestamp:
@@ -319,8 +317,9 @@ locale_timestamp = int (locale_timestamp)
 log_status (status.TITLE, 'Enumerate localizations')
 
 lng_content = '; ' + APP_NAME_SHORT + '\n'
-lng_content = lng_content + '; https://github.com/henrypp/' + APP_NAME_SHORT + '/tree/master/bin/i18n\n'
 lng_content = lng_content + ';\n; DO NOT MODIFY THIS FILE -- YOUR CHANGES WILL BE ERASED!\n\n'
+lng_content = lng_content + '; Locales: https://github.com/henrypp/' + APP_NAME_SHORT + '/tree/master/bin/i18n\n'
+lng_content = lng_content + '; Src: https://github.com/henrypp/builder\n'
 
 for name in i18n_files:
 	if not name.endswith ('.ini'):
